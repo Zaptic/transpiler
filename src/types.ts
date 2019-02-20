@@ -159,6 +159,16 @@ export function isGenericType(type: ts.Type): boolean {
     return Boolean(type.flags & ts.TypeFlags.TypeParameter)
 }
 
+/**
+ * A | B is an union
+ */
 export function isUnion(type: ts.Type): type is ts.UnionType {
     return Boolean(type.flags & ts.TypeFlags.Union)
+}
+
+/**
+ * A & N is an intersection
+ */
+export function isIntersection(type: ts.Type): type is ts.IntersectionType {
+    return Boolean(type.flags & ts.TypeFlags.Intersection)
 }

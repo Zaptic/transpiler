@@ -63,6 +63,27 @@ function buildUnion(resolvedTypes: JsonSchema[]): JsonSchema {
     return { anyOf: resolvedTypes }
 }
 
+function buildIntersection(resolvedTypes: JsonSchema[]): JsonSchema {
+    const intersection: JsonSchema = {
+        additionalProperties: false,
+        properties: {},
+        type: 'object',
+    }
+
+    const required = new Set<string>()
+
+    // Merge the declarations
+    resolvedTypes.forEach(part => {
+        const schema = part as JsonSchemaComplex // Unions are made of complex types TODO improve types around here
+        intersection.properties = { ...intersection.properties, ...schema.properties }
+        if (schema.required !== undefined) schema.required.forEach(value => required.add(value))
+    })
+
+    if (required.size > 0) intersection.required = [...required.values()]
+
+    return intersection
+}
+
 function buildObject(properties: Array<{ isOptional: boolean; name: string; resolvedType: JsonSchema }>): JsonSchema {
     const schema = {
         additionalProperties: false,
@@ -100,6 +121,7 @@ export const module: Transpiler.Module<JsonSchema> = {
     buildArray,
     buildEnum,
     buildIndexableObject,
+    buildIntersection,
     buildLiteral,
     buildObject,
     buildPrimitive,
