@@ -59,6 +59,10 @@ function buildEnum(resolvedEnum: Array<[string, JsonSchema]>): JsonSchema {
     return { anyOf: resolvedEnum.map(([_, schema]) => schema) }
 }
 
+function buildUnion(resolvedTypes: JsonSchema[]): JsonSchema {
+    return { anyOf: resolvedTypes }
+}
+
 function buildObject(properties: Array<{ isOptional: boolean; name: string; resolvedType: JsonSchema }>): JsonSchema {
     const schema = {
         additionalProperties: false,
@@ -100,4 +104,5 @@ export const module: Transpiler.Module<JsonSchema> = {
     buildObject,
     buildPrimitive,
     buildTuple,
+    buildUnion,
 }

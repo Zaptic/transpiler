@@ -15,6 +15,7 @@ export interface Module<T> {
     buildPrimitive: (typeString: string) => T
     buildArray: (resolvedType: T) => T
     buildTuple: (resolvedTypes: T[]) => T
+    buildUnion: (resolvedTypes: T[]) => T
     buildEnum: (resolvedTypes: Array<[string, T]>) => T
     buildLiteral: (literal: string | number | boolean | bigint) => T
     buildObject: (properties: Array<ResolvedProperty<T>>) => T
@@ -119,6 +120,7 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
             return module.buildObject(resolvedProperties)
         }
         if (Types.isGenericType(type)) return module.buildAny()
+        if (Types.isUnion(type)) return module.buildUnion(type.types.map(recursion))
 
         return 'Not supported' as any
     }

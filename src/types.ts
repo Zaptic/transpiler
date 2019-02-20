@@ -158,3 +158,7 @@ export function isGenericType(type: ts.Type): boolean {
     // We use TypeParameter as an approximation for a generic type, it might not be 100% accurate
     return Boolean(type.flags & ts.TypeFlags.TypeParameter)
 }
+
+export function isUnion(type: ts.Type): type is ts.UnionType {
+    return Boolean(type.flags & ts.TypeFlags.Union)
+}
