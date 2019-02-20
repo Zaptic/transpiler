@@ -6,6 +6,7 @@ export type JsonSchemaLiteral = string | number | boolean | bigint
 export interface JsonSchemaComplex {
     additionalProperties?: boolean
     allOf?: JsonSchema[]
+    anyOf?: JsonSchema[]
     description?: string
     enum?: JsonSchemaLiteral[]
     items?: JsonSchema | JsonSchema[]
@@ -55,7 +56,7 @@ function buildTuple(resolvedTypes: JsonSchema[]): JsonSchema {
 }
 
 function buildEnum(resolvedEnum: Array<[string, JsonSchema]>): JsonSchema {
-    return { enum: resolvedEnum.map(([_, schema]) => schema as JsonSchemaLiteral) }
+    return { anyOf: resolvedEnum.map(([_, schema]) => schema) }
 }
 
 function buildObject(properties: Array<{ isOptional: boolean; name: string; resolvedType: JsonSchema }>): JsonSchema {
