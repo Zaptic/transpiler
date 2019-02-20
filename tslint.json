@@ -1,0 +1,9 @@
+{
+    "extends": "tslint:latest",
+    "rules": {
+        "curly": [true, "ignore-same-line"],
+        "interface-name": false,
+        "quotemark": [true, "single", "avoid-escape"],
+        "semicolon": [true, "never"]
+    }
+}

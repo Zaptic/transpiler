@@ -1,0 +1,12 @@
+# Hidden files
+.*
+
+# Build folders
+dist
+
+# Node things
+node_modules
+yarn.lock
+
+# File extensions
+*.md

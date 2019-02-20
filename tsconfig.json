@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "ES6",
+        "outDir": "dist",
+        "declaration": true,
+        "baseUrl": ".",
+        "lib": ["es2016"],
+        "pretty": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "noUnusedParameters": true,
+        "noUnusedLocals": true,
+        "noErrorTruncation": true
+    },
+    "exclude": ["node_modules", "dist"]
+}
