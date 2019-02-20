@@ -1,8 +1,12 @@
 {
     "extends": "tslint:latest",
     "rules": {
+        "arrow-parens": false,
         "curly": [true, "ignore-same-line"],
         "interface-name": false,
+        "no-bitwise": false,
+        "no-object-literal-type-assertion": false,
+        "only-arrow-functions": false,
         "quotemark": [true, "single", "avoid-escape"],
         "semicolon": [true, "never"]
     }
