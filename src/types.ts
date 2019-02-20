@@ -15,22 +15,31 @@ export function isTranspilable(node: ts.Node): node is TranspilableNode {
     )
 }
 
+interface LiteralBigInt extends ts.LiteralType {
+    value: ts.PseudoBigInt
+}
+
+interface LiteralWithoutBigInt extends ts.LiteralType {
+    value: string | number
+}
+
 /**
  * A literal type is a type that represents a literal value.
  *
  * Example:
  * In `type Foo = { bar: 10, baz: number }`, the type of `Foo['bar']` is the literal value `10`
  */
-export function isLiteral(type: ts.Type): type is ts.LiteralType {
-    const flags = type.flags
-
+export function isLiteral(type: ts.Type): type is LiteralWithoutBigInt {
     const check =
-        flags & ts.TypeFlags.StringLiteral ||
-        flags & ts.TypeFlags.NumberLiteral ||
-        flags & ts.TypeFlags.BooleanLiteral ||
-        flags & ts.TypeFlags.BigIntLiteral
+        type.flags & ts.TypeFlags.StringLiteral ||
+        type.flags & ts.TypeFlags.NumberLiteral ||
+        type.flags & ts.TypeFlags.BooleanLiteral
 
     return Boolean(check)
+}
+
+export function isBigIntLiteral(type: ts.Type): type is LiteralBigInt {
+    return Boolean(type.flags & ts.TypeFlags.BigIntLiteral)
 }
 
 /**

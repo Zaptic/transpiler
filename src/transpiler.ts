@@ -8,13 +8,15 @@ export interface ResolvedProperty<T> {
     resolvedType: T
 }
 
+export type Literal = string | number | boolean | bigint | ts.PseudoBigInt
+
 export interface Module<T> {
     buildAny: () => T
     buildPrimitive: (typeString: string) => T
     buildArray: (resolvedType: T) => T
     buildTuple: (resolvedTypes: T[]) => T
     buildEnum: (resolvedTypes: Array<[string, T]>) => T
-    buildLiteral: (literal: string | number | boolean | bigint | ts.PseudoBigInt) => T
+    buildLiteral: (literal: string | number | boolean | bigint) => T
     buildObject: (properties: Array<ResolvedProperty<T>>) => T
     buildIndexableObject: (resolvedType: T, kind: 'string' | 'number') => T
 }
@@ -62,6 +64,9 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
     function recursion(type: ts.Type): T {
         const typeString = checker.typeToString(type)
 
+        if (Types.isBigIntLiteral(type)) {
+            return module.buildLiteral(type.value.negative ? `-${type.value.base10Value}` : type.value.base10Value)
+        }
         if (Types.isLiteral(type)) return module.buildLiteral(type.value)
         if (Types.isPrimitive(type)) return module.buildPrimitive(typeString)
         if (Types.isArray(type)) return module.buildArray(recursion(type.typeArguments[0]))

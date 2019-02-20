@@ -1,4 +1,6 @@
-export type JsonSchemaLiteral = string | number | boolean
+import * as Transpiler from '../transpiler'
+
+export type JsonSchemaLiteral = string | number | boolean | bigint
 
 // Complex as opposed to literal - can't find a better word
 export interface JsonSchemaComplex {
@@ -14,8 +16,8 @@ export interface JsonSchemaComplex {
 
 export type JsonSchema = JsonSchemaLiteral | JsonSchemaComplex
 
-export function buildLiteral(literal: string | boolean | number): JsonSchema {
-    return literal
+export function buildLiteral(literal: number | string | boolean | bigint): JsonSchema {
+    return { enum: [literal] }
 }
 
 function buildPrimitive(type: string): JsonSchema {
@@ -36,6 +38,8 @@ function buildPrimitive(type: string): JsonSchema {
             return { type: 'number' }
         case 'boolean':
             return { type: 'boolean' }
+        case 'bigint':
+            return { description: 'This is a bigint', type: 'number' }
 
         default:
             throw new Error(`Unsupported type please open an issue on github`)
@@ -86,7 +90,7 @@ function buildAny() {
     return {}
 }
 
-export const module = {
+export const module: Transpiler.Module<JsonSchema> = {
     buildAny,
     buildArray,
     buildEnum,
