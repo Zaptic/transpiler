@@ -172,3 +172,15 @@ export function isUnion(type: ts.Type): type is ts.UnionType {
 export function isIntersection(type: ts.Type): type is ts.IntersectionType {
     return Boolean(type.flags & ts.TypeFlags.Intersection)
 }
+
+/**
+ * Hopefully this will become useless in the future
+ * https://github.com/Microsoft/TypeScript/issues/5687
+ *
+ * Please note that "string" is a type and will have the same id everywhere. Same for other primitives.
+ */
+export function getTypeId(type: ts.Type) {
+    // See issue above, type ids are not in the interface but exist and are globally unique to a checker instance
+    // because we only use one checker instance this id can be considered globally unique.
+    return (type as any).id
+}
