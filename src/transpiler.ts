@@ -40,17 +40,19 @@ export interface Options<T> extends Compiler.Options {
     isProcessable?: (node: ts.Node) => boolean
 }
 
-export function processFiles<T>(options: Options<T>): T[] {
+export function processFiles<T>(options: Options<T>): Array<[string, T]> {
     const { program, checker } = Compiler.createProgram(options)
 
-    // For now let's just flatten the types, later we might want to keep the nesting in order to know what type came
-    // from what file
     const nodesOfInterest = program.getSourceFiles().reduce((nodes: ts.Node[], file) => {
         if (!options.filePaths.includes(file.fileName)) return nodes
         return nodes.concat(Compiler.getNodesToProcess(file, options.isProcessable))
     }, [])
 
-    return nodesOfInterest.map(typeNode => resolveTypeNode(typeNode, checker, options.module))
+    return nodesOfInterest.map(typeNode => {
+        const fileName = typeNode.getSourceFile().fileName
+        const type = resolveTypeNode(typeNode, checker, options.module)
+        return [fileName, type] as [string, T]
+    })
 }
 
 function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module: Module<T>): T {

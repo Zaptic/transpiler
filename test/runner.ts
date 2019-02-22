@@ -28,7 +28,7 @@ describe('The Library', function() {
             const result = processFiles({ module, filePaths: [inputFilePath] })
             const expected = (await import(expectedFilePath)).default
 
-            assert.deepEqual(result, expected)
+            assert.deepEqual(result.map(([_, schema]) => schema), expected)
         })
     })
 })
