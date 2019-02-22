@@ -13,6 +13,14 @@ export interface JsonSchemaComplex {
     properties?: { [key: string]: JsonSchema }
     required?: string[]
     type?: string
+    $ref?: string
+    definitions?: { [key: string]: JsonSchema }
+}
+
+interface ResolvedProperty {
+    isOptional: boolean
+    name: string
+    resolvedType: JsonSchema
 }
 
 export type JsonSchema = JsonSchemaLiteral | JsonSchemaComplex
@@ -84,7 +92,7 @@ function buildIntersection(resolvedTypes: JsonSchema[]): JsonSchema {
     return intersection
 }
 
-function buildObject(properties: Array<{ isOptional: boolean; name: string; resolvedType: JsonSchema }>): JsonSchema {
+function buildObject(properties: ResolvedProperty[], type: Transpiler.TypeIdentification): JsonSchema {
     const schema = {
         additionalProperties: false,
         properties: {} as { [key: string]: JsonSchema },
@@ -99,6 +107,15 @@ function buildObject(properties: Array<{ isOptional: boolean; name: string; reso
 
     // Remove the required if it's not required
     if (schema.required.length === 0) delete schema.required
+
+    // Update the definitions if the current type was self referencing
+    const currentDefinition = definitionsMap.get(type.name)
+    if (currentDefinition) {
+        definitionsMap.set(type.name, schema)
+        // If we know that the current type is self referencing and we will have it in the definitions portion we
+        // don't have to write the whole type in the actual "body" we can simply use the reference to avoid repetition
+        return buildReference(type)
+    }
 
     return schema
 }
@@ -116,6 +133,33 @@ function buildAny() {
     return {}
 }
 
+/**
+ * These are the types that are self referencing for which we need to create a definition
+ */
+const definitionsMap = new Map<string, JsonSchema>()
+
+function startResolution() {
+    definitionsMap.clear()
+}
+
+function endResolution(resolvedType: JsonSchema) {
+    if (definitionsMap.size > 0) {
+        const definitions: JsonSchemaComplex['definitions'] = {}
+
+        // Add a definitions section
+        for (const [key, value] of definitionsMap.entries()) definitions[key] = value
+
+        return { ...(resolvedType as JsonSchemaComplex), definitions }
+    }
+
+    return resolvedType
+}
+
+function buildReference(type: Transpiler.TypeIdentification) {
+    if (!definitionsMap.get(type.name)) definitionsMap.set(type.name, {})
+    return { $ref: `#/definitions/${type.name}` }
+}
+
 export const module: Transpiler.Module<JsonSchema> = {
     buildAny,
     buildArray,
@@ -125,6 +169,9 @@ export const module: Transpiler.Module<JsonSchema> = {
     buildLiteral,
     buildObject,
     buildPrimitive,
+    buildReference,
     buildTuple,
     buildUnion,
+    endResolution,
+    startResolution,
 }

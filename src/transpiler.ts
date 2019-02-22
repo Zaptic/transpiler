@@ -10,6 +10,14 @@ export interface ResolvedProperty<T> {
 
 export type Literal = string | number | boolean | bigint | ts.PseudoBigInt
 
+/**
+ * This identifies a type. The id is unique and the name can be used for display.
+ */
+export interface TypeIdentification {
+    id: number
+    name: string
+}
+
 export interface Module<T> {
     buildAny: () => T
     buildPrimitive: (typeString: string) => T
@@ -19,8 +27,11 @@ export interface Module<T> {
     buildIntersection: (resolvedTypes: T[]) => T
     buildEnum: (resolvedTypes: Array<[string, T]>) => T
     buildLiteral: (literal: string | number | boolean | bigint) => T
-    buildObject: (properties: Array<ResolvedProperty<T>>) => T
+    buildObject: (properties: Array<ResolvedProperty<T>>, type: TypeIdentification) => T
+    buildReference: (type: TypeIdentification) => T
     buildIndexableObject: (resolvedType: T, kind: 'string' | 'number') => T
+    endResolution: (resolvedType: T) => T
+    startResolution: () => void
 }
 
 export interface Options<T> extends Compiler.Options {
@@ -63,8 +74,16 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
         return null
     }
 
+    const visited = new Map<number, TypeIdentification>()
+
     function recursion(type: ts.Type): T {
         const typeString = checker.typeToString(type)
+        const typeId = Types.getTypeId(type)
+
+        const identification: TypeIdentification = {
+            id: typeId,
+            name: typeString,
+        }
 
         if (Types.isBigIntLiteral(type)) {
             return module.buildLiteral(type.value.negative ? `-${type.value.base10Value}` : type.value.base10Value)
@@ -78,6 +97,11 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
             return module.buildEnum(types)
         }
         if (Types.isObject(type)) {
+            if (visited.has(typeId)) return module.buildReference(identification)
+
+            // We mark the current type as visited
+            visited.set(typeId, identification)
+
             const indexType = getIndexType(type)
             // If we have a string index it's more permissive than anything else on the object and at the moment
             // I don't think it makes sense to take anything else there into account if that makes sense
@@ -118,17 +142,18 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
                 })
             })
 
-            return module.buildObject(resolvedProperties)
+            // Remove the object from visited once it's resolved
+            visited.delete(typeId)
+            return module.buildObject(resolvedProperties, identification)
         }
         if (Types.isGenericType(type)) return module.buildAny()
         if (Types.isUnion(type)) return module.buildUnion(type.types.map(recursion))
         if (Types.isIntersection(type)) return module.buildIntersection(type.types.map(recursion))
 
-        console.log(typeString, 'is not supported')
-        console.log(type.flags)
-
         return 'Not supported' as any
     }
 
-    return recursion(checker.getTypeAtLocation(startNode))
+    module.startResolution()
+    const result = recursion(checker.getTypeAtLocation(startNode))
+    return module.endResolution(result)
 }
