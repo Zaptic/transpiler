@@ -160,9 +160,14 @@ function buildReference(type: Transpiler.TypeIdentification) {
     return { $ref: `#/definitions/${type.name}` }
 }
 
+function buildDate() {
+    return { description: 'This is a date', type: 'string' }
+}
+
 export const module: Transpiler.Module<JsonSchema> = {
     buildAny,
     buildArray,
+    buildDate,
     buildEnum,
     buildIndexableObject,
     buildIntersection,

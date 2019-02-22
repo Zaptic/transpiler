@@ -20,6 +20,7 @@ export interface TypeIdentification {
 
 export interface Module<T> {
     buildAny: () => T
+    buildDate: () => T
     buildPrimitive: (typeString: string) => T
     buildArray: (resolvedType: T) => T
     buildTuple: (resolvedTypes: T[]) => T
@@ -96,6 +97,7 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
             const types = type.types.map(t => [t.symbol.escapedName, recursion(t)] as [string, T])
             return module.buildEnum(types)
         }
+        if (Types.isDate(typeString)) return module.buildDate()
         if (Types.isObject(type)) {
             if (visited.has(typeId)) return module.buildReference(identification)
 
@@ -129,7 +131,7 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
                 const propertyDeclaration = property.declarations[0]
 
                 // Don't process functions
-                if (Types.isObject(propertyType) && Types.isAnonymousFunction(propertyType)) return
+                if (Types.isObject(propertyType) && Types.isFunctionLike(propertyType)) return
                 // Don't process get accessors
                 if (Types.isGetAccessor(property)) return
                 // Don't process private properties

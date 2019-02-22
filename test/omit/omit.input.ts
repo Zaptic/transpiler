@@ -36,8 +36,8 @@ type Content = ContentBase & (TextContent | FileContent)
 interface AnnouncementBase {
     id: UUID
     name: string
-    createAt: Date
-    createBy: number
+    createdAt: Date
+    createdBy: number
     isActive: boolean
     views: bigint
 }

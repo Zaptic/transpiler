@@ -66,10 +66,15 @@ export function isPrimitive(type: ts.Type) {
 }
 
 /**
- * This is an approximation to determine if an "object" represents an anonymous function
+ * This is an approximation to determine if an "object" represents a function or a method
  */
-export function isAnonymousFunction(object: ts.ObjectType) {
-    return Boolean(object.objectFlags & ts.ObjectFlags.Anonymous) && object.aliasTypeArguments === undefined
+export function isFunctionLike(object: ts.ObjectType) {
+    const check = object.symbol.flags & ts.SymbolFlags.Function || object.symbol.flags & ts.SymbolFlags.Method
+    return Boolean(check)
+}
+
+export function isDate(typeString: string) {
+    return typeString === 'Date'
 }
 
 /**
