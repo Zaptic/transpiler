@@ -1,12 +1,11 @@
 import * as ts from 'typescript'
 
-export type TranspilableNode = ts.InterfaceDeclaration | ts.TypeAliasDeclaration | ts.EnumDeclaration
-
 /**
  * A "transpilable" node is a node that contains information about a data structure which can be transpiled (converted)
- * into another construct that represents the same data structure
+ * into another construct that represents the same data structure. TS seems to be representing *everything* in a
+ * file as a node whether it's a keyword, a variable name, a function, a type alias, ...
  */
-export function isTranspilable(node: ts.Node): node is TranspilableNode {
+export function isTranspilable(node: ts.Node): boolean {
     return (
         ts.isInterfaceDeclaration(node) ||
         ts.isTypeAliasDeclaration(node) ||

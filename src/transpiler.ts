@@ -37,6 +37,7 @@ export interface Module<T> {
 
 export interface Options<T> extends Compiler.Options {
     module: Module<T>
+    isProcessable?: (node: ts.Node) => boolean
 }
 
 export function processFiles<T>(options: Options<T>): T[] {
@@ -44,9 +45,9 @@ export function processFiles<T>(options: Options<T>): T[] {
 
     // For now let's just flatten the types, later we might want to keep the nesting in order to know what type came
     // from what file
-    const nodesOfInterest = program.getSourceFiles().reduce((nodes: Types.TranspilableNode[], file) => {
+    const nodesOfInterest = program.getSourceFiles().reduce((nodes: ts.Node[], file) => {
         if (!options.filePaths.includes(file.fileName)) return nodes
-        return nodes.concat(Compiler.getTranspilableNodes(file))
+        return nodes.concat(Compiler.getNodesToProcess(file, options.isProcessable))
     }, [])
 
     return nodesOfInterest.map(typeNode => resolveTypeNode(typeNode, checker, options.module))
