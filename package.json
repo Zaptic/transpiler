@@ -1,14 +1,31 @@
 {
-    "name": "transpiler",
-    "version": "0.0.1",
+    "name": "@zaptic-external/transpiler",
+    "version": "0.1.0",
     "description": "A simple ts type transpiler",
-    "main": "index.js",
-    "author": "Ben Babic",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "author": "Ben <ben@zaptic.com>",
     "license": "MIT",
     "private": false,
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Zaptic/transpiler"
+    },
+    "keywords": [
+        "transpiler",
+        "json",
+        "joi",
+        "schema",
+        "typescript"
+    ],
+    "bugs": {
+        "url": "https://github.com/Zaptic/transpiler/issues"
+    },
     "scripts": {
-        "prettier-base": "prettier --config prettier.config.json '**'",
-        "prettier": "prettier-base --write"
+        "release": "./scripts/release",
+        "lint": "tslint -c tslint.json --project tsconfig.json",
+        "prettier": "prettier --config prettier.config.json '**' --write",
+        "test": "mocha --colors --require ts-node/register --ui bdd $(find test/ -name 'runner.ts')"
     },
     "devDependencies": {
         "@types/chai": "^4.1.6",

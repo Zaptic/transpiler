@@ -1,0 +1,12 @@
+# Hidden files
+.*
+
+# Source files
+scripts/*
+src/*
+test/*
+
+# Dev configuration files
+tsconfig.json
+tslint.json
+prettier.config.js

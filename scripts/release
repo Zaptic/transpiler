@@ -1,0 +1,30 @@
+#!/bin/bash -e
+
+VERSION=$1
+if [[ -z $1 ]]; then
+    echo "Usage: release [major | minor | patch]"
+    exit 1
+fi
+
+echo "Compiling..."
+rm -rf dist/
+tsc
+
+echo "Checking release..."
+npm run prettier -l
+npm run lint
+npm test
+
+echo "Publishing release..."
+DATE=`date +%Y/%m/%d`
+NEW_VERSION=`npm version "$VERSION" --no-git-tag-version | sed 's/v//'`
+
+CHANGELOG_HEADER="## \[Unreleased\]"
+NEW_CHANGELOG_HEADER="## [$NEW_VERSION] - $DATE"
+
+sed -i "s|$CHANGELOG_HEADER|$CHANGELOG_HEADER\n\n$NEW_CHANGELOG_HEADER|" CHANGELOG.md
+git commit -m "Bump to $NEW_VERSION" CHANGELOG.md package.json
+git tag "$NEW_VERSION"
+
+npm publish --access public
+git push

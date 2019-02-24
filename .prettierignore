@@ -1,6 +1,9 @@
 # Hidden files
 .*
 
+# Scripts
+scripts
+
 # Build folders
 dist
 
