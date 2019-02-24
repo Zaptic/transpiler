@@ -1,4 +1,4 @@
-export default [
+export const json = [
     {},
     { type: 'undefined' },
     { type: 'null' },
@@ -14,4 +14,20 @@ export default [
     { type: 'array', items: { type: 'boolean' } },
     { type: 'array', items: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }] },
     { anyOf: [{ enum: ['Red'] }, { enum: ['Green'] }, { enum: ['Blue'] }] },
+]
+
+export const joi = [
+    'const resolvedType = Joi.any()',
+    'const resolvedType = Joi.allow(undefined)',
+    'const resolvedType = Joi.allow(null)',
+    'const resolvedType = Joi.allow(undefined)',
+    'const resolvedType = Joi.only()',
+    'const resolvedType = Joi.string()',
+    'const resolvedType = Joi.number()',
+    'const resolvedType = Joi.boolean()',
+    'const resolvedType = Joi.array().items(Joi.string())',
+    'const resolvedType = Joi.array().items(Joi.number())',
+    'const resolvedType = Joi.array().items(Joi.boolean())',
+    'const resolvedType = Joi.array().ordered([Joi.string(),Joi.number(),Joi.boolean()])',
+    'const resolvedType = Joi.only([Joi.equal("Red"),Joi.equal("Green"),Joi.equal("Blue")])',
 ]

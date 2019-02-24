@@ -1,4 +1,4 @@
-export default [
+export const json = [
     {
         additionalProperties: false,
         properties: {
@@ -14,3 +14,5 @@ export default [
         type: 'object',
     },
 ]
+
+export const joi = ['const resolvedType = Joi.object({ bigInt: Joi.string(),literalBigInt: Joi.equal("100") })']

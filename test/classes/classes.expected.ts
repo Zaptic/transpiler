@@ -1,5 +1,5 @@
 // tslint:disable
-export default [
+export const json = [
     {
         additionalProperties: false,
         properties: {
@@ -106,4 +106,14 @@ export default [
         required: ['z', 'x', 'y'],
         type: 'object',
     },
+]
+
+export const joi = [
+    'const resolvedType = Joi.object({ name: Joi.string(),speed: Joi.number() })',
+    'const resolvedType = Joi.object({ _barkCount: Joi.number(),name: Joi.string(),speed: Joi.number(),isDog: Joi.boolean() })',
+    'const resolvedType = Joi.object({ name: Joi.string(),speed: Joi.number() })',
+    'const resolvedType = Joi.object({ authors: Joi.array().items(Joi.string()) })',
+    'const resolvedType = Joi.object({ colors: Joi.array().items(Joi.string()),authors: Joi.array().items(Joi.string()) })',
+    'const resolvedType = Joi.object({ x: Joi.number(),y: Joi.number() })',
+    'const resolvedType = Joi.object({ z: Joi.number(),x: Joi.number(),y: Joi.number() })',
 ]

@@ -1,5 +1,5 @@
 // tslint:disable
-export default [
+export const json = [
     { additionalProperties: false, properties: {}, type: 'object' },
     { type: 'string' },
     {
@@ -160,4 +160,19 @@ export default [
             },
         ],
     },
+]
+
+export const joi = [
+    'const resolvedType = Joi.object({  })',
+    'const resolvedType = Joi.string()',
+    'const resolvedType = Joi.object({ country: Joi.string().optional(),city: Joi.string() })',
+    'const resolvedType = Joi.object({ country: Joi.string().optional(),city: Joi.string().optional(),street: Joi.string() })',
+    'const resolvedType = Joi.alternatives([Joi.object({ country: Joi.string().optional(),city: Joi.string() }),Joi.object({ country: Joi.string().optional(),city: Joi.string().optional(),street: Joi.string() })])',
+    'const resolvedType = Joi.object({ id: Joi.string(),createdAt: Joi.date() })',
+    'const resolvedType = Joi.object({ contentType: Joi.equal("text"),text: Joi.string() })',
+    'const resolvedType = Joi.object({ contentType: Joi.equal("file"),title: Joi.string(),url: Joi.string() })',
+    'const resolvedType = Joi.alternatives([Joi.object().keys(({ id: Joi.string(),createdAt: Joi.date() })).keys(({ contentType: Joi.equal("text"),text: Joi.string() })),Joi.object().keys(({ id: Joi.string(),createdAt: Joi.date() })).keys(({ contentType: Joi.equal("file"),title: Joi.string(),url: Joi.string() }))])',
+    'const resolvedType = Joi.object({ id: Joi.string(),name: Joi.string(),createdAt: Joi.date(),createdBy: Joi.number(),isActive: Joi.boolean(),views: Joi.string() })',
+    'const resolvedType = Joi.alternatives([Joi.object().keys(({ id: Joi.string(),name: Joi.string(),createdAt: Joi.date(),createdBy: Joi.number(),isActive: Joi.boolean(),views: Joi.string() })).keys(({ country: Joi.string().optional(),city: Joi.string() })),Joi.object().keys(({ id: Joi.string(),name: Joi.string(),createdAt: Joi.date(),createdBy: Joi.number(),isActive: Joi.boolean(),views: Joi.string() })).keys(({ country: Joi.string().optional(),city: Joi.string().optional(),street: Joi.string() }))])',
+    'const resolvedType = Joi.alternatives([Joi.object().keys(({ id: Joi.string(),name: Joi.string(),createdAt: Joi.date(),createdBy: Joi.number(),isActive: Joi.boolean(),views: Joi.string() })).keys(({ country: Joi.string().optional(),city: Joi.string() })).keys(({ createdAt: Joi.date(),contentType: Joi.alternatives([Joi.equal("text"),Joi.equal("file")]) })),Joi.object().keys(({ id: Joi.string(),name: Joi.string(),createdAt: Joi.date(),createdBy: Joi.number(),isActive: Joi.boolean(),views: Joi.string() })).keys(({ country: Joi.string().optional(),city: Joi.string().optional(),street: Joi.string() })).keys(({ createdAt: Joi.date(),contentType: Joi.alternatives([Joi.equal("text"),Joi.equal("file")]) }))])',
 ]
