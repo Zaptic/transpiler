@@ -120,7 +120,8 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
             const parentDeclarations = type.symbol.getDeclarations()
 
             // An "object" type should always have a declaration
-            if (!parentDeclarations) return 'Not supported - undefined declarations for symbol' as any
+            if (!parentDeclarations) return module.buildObject([], identification)
+            // Not sure if this will ever happen
             if (parentDeclarations.length === 0) return 'Not supported - declarations of length 0 for symbol' as any
 
             const resolvedProperties: Array<ResolvedProperty<T>> = []
