@@ -82,7 +82,7 @@ function buildObject(properties: ResolvedProperty[], type: Transpiler.TypeIdenti
 }
 
 function buildIndexableObject(resolvedType: JoiSchema) {
-    return `Joi.object().pattern('.*', ${resolvedType})`
+    return `Joi.object().pattern(/.*/, ${resolvedType})`
 }
 
 function buildAny() {

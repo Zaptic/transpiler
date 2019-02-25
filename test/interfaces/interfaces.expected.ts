@@ -71,7 +71,7 @@ export const json = [
 ]
 
 export const joi = [
-    "const resolvedType = Joi.object({ params: Joi.any(),req: Joi.object({ body: Joi.object().pattern('.*', Joi.any()) }) })",
-    "const resolvedType = Joi.object({ params: Joi.any(),req: Joi.object({ body: Joi.object().pattern('.*', Joi.any()) }) })",
-    "const resolvedType = Joi.object({ params: Joi.object({ id: Joi.number() }),req: Joi.object({ body: Joi.object().pattern('.*', Joi.any()) }) })",
+    'const resolvedType = Joi.object({ params: Joi.any(),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })',
+    'const resolvedType = Joi.object({ params: Joi.any(),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })',
+    'const resolvedType = Joi.object({ params: Joi.object({ id: Joi.number() }),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })',
 ]
