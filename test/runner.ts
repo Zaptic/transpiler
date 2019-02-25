@@ -1,8 +1,8 @@
 import { assert } from 'chai' // tslint:disable-line
 import * as fs from 'fs'
 import * as path from 'path'
-import * as Joi from '../src/modules/joi'
-import * as JsonSchema from '../src/modules/jsonSchema'
+import { JoiModule } from '../src/modules/joi'
+import { JsonSchemaModule } from '../src/modules/jsonSchema'
 import * as Transpiler from '../src/transpiler'
 
 // TODO make this friendlier to use
@@ -31,14 +31,20 @@ describe('The Library', function() {
 
         it(`${featureName}`, async function() {
             if (!moduleToRun || moduleToRun === 'json') {
-                const jsonResult = Transpiler.processFiles({ module: JsonSchema.module, filePaths: [inputFilePath] })
+                const jsonResult = Transpiler.processFiles({
+                    filePaths: [inputFilePath],
+                    module: new JsonSchemaModule(),
+                })
                 const jsonExpected = (await import(expectedFilePath)).json
 
                 assert.deepEqual(jsonResult.map(([_, schema]) => schema), jsonExpected)
             }
 
             if (!moduleToRun || moduleToRun === 'joi') {
-                const joiResult = Transpiler.processFiles({ module: Joi.module, filePaths: [inputFilePath] })
+                const joiResult = Transpiler.processFiles({
+                    filePaths: [inputFilePath],
+                    module: new JoiModule({ allowEmptyStrings: false }),
+                })
                 const joiExpected = (await import(expectedFilePath)).joi
 
                 assert.deepEqual(joiResult.map(([_, schema]) => schema), joiExpected)

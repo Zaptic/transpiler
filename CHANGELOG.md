@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Modules are now classes
+
 ### Fixed
 
 - The joi module was returning `.only()` for typescript `never` schemas. It will now properly return `.forbidden()`.
