@@ -24,7 +24,7 @@ function buildPrimitive(type: string): JoiSchema {
         case 'undefined':
             return 'Joi.allow(undefined)'
         case 'never':
-            return `Joi.only()`
+            return `Joi.forbidden()`
         case 'string':
             return `Joi.string()`
         case 'number':
