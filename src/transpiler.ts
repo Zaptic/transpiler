@@ -104,9 +104,6 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
         if (Types.isObject(type)) {
             if (visited.has(typeId)) return module.buildReference(identification)
 
-            // We mark the current type as visited
-            visited.set(typeId, identification)
-
             const indexType = getIndexType(type)
             // If we have a string index it's more permissive than anything else on the object and at the moment
             // I don't think it makes sense to take anything else there into account if that makes sense
@@ -125,6 +122,9 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
             if (parentDeclarations.length === 0) return 'Not supported - declarations of length 0 for symbol' as any
 
             const resolvedProperties: Array<ResolvedProperty<T>> = []
+
+            // We mark the current type as visited only once we know that it has children
+            visited.set(typeId, identification)
 
             properties.forEach(property => {
                 if (Types.isPrototype(property)) return // Do not process prototypes

@@ -5,6 +5,7 @@
 ### Fixed
 
 - The joi module was returning `.only()` for typescript `never` schemas. It will now properly return `.forbidden()`.
+- Optimized memory usage for recurring types
 
 ### Added
 
