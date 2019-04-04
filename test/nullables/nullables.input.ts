@@ -9,4 +9,5 @@ interface City {
     state: UndefinableThing
     city: NullableThing
     street: string
+    whyWouldYouDoThis: undefined
 }

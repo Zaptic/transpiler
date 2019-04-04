@@ -106,14 +106,17 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
     }
 
     public buildObject(properties: ResolvedProperty[], type: Transpiler.TypeIdentification): JoiSchema {
-        const propertiesSchema = properties.map(({ maybeUndefined, isOptional, name, resolvedType }) => {
-            if (isOptional || maybeUndefined) {
-                if (this.options.assumeRequired) return `${name}: ${resolvedType}.optional()`
-                return `${name}: ${resolvedType}`
-            }
-            if (this.options.assumeRequired) return `${name}: ${resolvedType}`
-            return `${name}: ${resolvedType}.required()`
-        })
+        const propertiesSchema = properties
+            // Handle the case when someone defined something like `{ property: undefined }` by ignoring that completely
+            .filter(({ resolvedType }) => resolvedType !== 'Joi.allow(undefined)')
+            .map(({ maybeUndefined, isOptional, name, resolvedType }) => {
+                if (isOptional || maybeUndefined) {
+                    if (this.options.assumeRequired) return `${name}: ${resolvedType}.optional()`
+                    return `${name}: ${resolvedType}`
+                }
+                if (this.options.assumeRequired) return `${name}: ${resolvedType}`
+                return `${name}: ${resolvedType}.required()`
+            })
         const schema = `Joi.object({ ${propertiesSchema.join(',')} })`
 
         // Update the definitions if the current type was self referencing

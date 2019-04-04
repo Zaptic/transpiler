@@ -121,6 +121,9 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
         }
 
         properties.forEach(({ maybeUndefined, isOptional, name, resolvedType }) => {
+            // Handle the case when someone defined something like `{ property: undefined }` by ignoring that completely
+            if (resolvedType.type === 'undefined') return
+
             if (!isOptional && !maybeUndefined) schema.required.push(name)
             schema.properties[name] = resolvedType
         })
