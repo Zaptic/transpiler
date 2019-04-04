@@ -131,8 +131,8 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
                 // A property that is part of a class / type / interface should always have a declaration.
                 if (!Types.hasDeclarations(property)) return 'Not supported - undefined property declarations' as any
 
-                const propertyType = checker.getTypeOfSymbolAtLocation(property, parentDeclarations[0])
                 const propertyDeclaration = property.declarations[0]
+                const propertyType = checker.getTypeOfSymbolAtLocation(property, propertyDeclaration)
 
                 // Don't process functions
                 if (Types.isObject(propertyType) && Types.isFunctionLike(propertyType)) return

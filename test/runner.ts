@@ -32,6 +32,7 @@ describe('The Library', function() {
         it(`${featureName}`, async function() {
             if (!moduleToRun || moduleToRun === 'json') {
                 const jsonResult = Transpiler.processFiles({
+                    compiler: { strictNullChecks: true },
                     filePaths: [inputFilePath],
                     module: new JsonSchemaModule(),
                 })
@@ -42,6 +43,7 @@ describe('The Library', function() {
 
             if (!moduleToRun || moduleToRun === 'joi') {
                 const joiResult = Transpiler.processFiles({
+                    compiler: { strictNullChecks: true },
                     filePaths: [inputFilePath],
                     module: new JoiModule({ allowEmptyStrings: false }),
                 })
