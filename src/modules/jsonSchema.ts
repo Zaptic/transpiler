@@ -3,7 +3,7 @@ import * as Transpiler from '../transpiler'
 export type JsonSchemaLiteral = string | number | boolean | bigint
 
 // Complex as opposed to literal - can't find a better word
-export interface JsonSchemaComplex {
+export interface JsonSchema {
     additionalProperties?: boolean
     allOf?: JsonSchema[]
     anyOf?: JsonSchema[]
@@ -17,13 +17,7 @@ export interface JsonSchemaComplex {
     definitions?: { [key: string]: JsonSchema }
 }
 
-interface ResolvedProperty {
-    isOptional: boolean
-    name: string
-    resolvedType: JsonSchema
-}
-
-export type JsonSchema = JsonSchemaLiteral | JsonSchemaComplex
+type ResolvedProperty = Transpiler.ResolvedProperty<JsonSchema>
 
 export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
     /**
@@ -48,11 +42,15 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
             case 'any':
                 return this.buildAny()
             case 'void':
+            case 'undefined':
+                // `undefined` is not supported by json spec. We're going to use this to know when to take a type
+                // and make it optional later on. If someone was to try and expose a type that's only undefined
+                // then we might want to raise that as an invalid type in some way. Alternatively we could leave that
+                // to their schema checker as that's a pretty obvious mistake
+                // TODO figure out a good strategy to handle undefined
                 return { type: 'undefined' }
             case 'null':
                 return { type: 'null' }
-            case 'undefined':
-                return { type: 'undefined' }
             case 'never':
                 return { description: 'This is a never type', allOf: [{ type: 'string' }, { type: 'number' }] }
             case 'string':
@@ -86,6 +84,10 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
     }
 
     public buildUnion(resolvedTypes: JsonSchema[]): JsonSchema {
+        // If a union of types is composed of a type T OR undefined then we can reduce that to T.
+        const filteredTypes = resolvedTypes.filter(resolvedType => resolvedType.type !== 'undefined')
+        if (filteredTypes.length === 1) return filteredTypes[0]
+
         return { anyOf: resolvedTypes }
     }
 
@@ -100,7 +102,7 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
 
         // Merge the declarations
         resolvedTypes.forEach(part => {
-            const schema = part as JsonSchemaComplex // Unions are made of complex types TODO improve types around here
+            const schema = part // Unions are made of complex types TODO improve types around here
             intersection.properties = { ...intersection.properties, ...schema.properties }
             if (schema.required !== undefined) schema.required.forEach(value => required.add(value))
         })
@@ -118,8 +120,8 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
             type: 'object',
         }
 
-        properties.forEach(({ isOptional, name, resolvedType }) => {
-            if (!isOptional) schema.required.push(name)
+        properties.forEach(({ maybeUndefined, isOptional, name, resolvedType }) => {
+            if (!isOptional && !maybeUndefined) schema.required.push(name)
             schema.properties[name] = resolvedType
         })
 
@@ -154,12 +156,12 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
 
     public endResolution(resolvedType: JsonSchema) {
         if (this.definitionsMap.size > 0) {
-            const definitions: JsonSchemaComplex['definitions'] = {}
+            const definitions: JsonSchema['definitions'] = {}
 
             // Add a definitions section
             for (const [key, value] of this.definitionsMap.entries()) definitions[key] = value
 
-            return { ...(resolvedType as JsonSchemaComplex), definitions }
+            return { ...resolvedType, definitions }
         }
 
         return resolvedType

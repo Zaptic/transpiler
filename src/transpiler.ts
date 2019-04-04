@@ -4,6 +4,7 @@ import * as Types from './types'
 
 export interface ResolvedProperty<T> {
     isOptional: boolean
+    maybeUndefined: boolean
     name: string
     resolvedType: T
 }
@@ -143,6 +144,9 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
 
                 resolvedProperties.push({
                     isOptional: Types.isOptional(property),
+                    maybeUndefined:
+                        Types.isUnion(propertyType) &&
+                        propertyType.types.filter(part => !Types.isUndefined(part)).length === 1,
                     name: property.getName(),
                     resolvedType: recursion(propertyType),
                 })
