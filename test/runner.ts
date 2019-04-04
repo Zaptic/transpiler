@@ -1,8 +1,7 @@
 import { assert } from 'chai' // tslint:disable-line
 import * as fs from 'fs'
 import * as path from 'path'
-import { JoiModule } from '../src/modules/joi'
-import { JsonSchemaModule } from '../src/modules/jsonSchema'
+import { JoiModule, JsonSchemaModule } from '../src'
 import * as Transpiler from '../src/transpiler'
 
 // TODO make this friendlier to use
