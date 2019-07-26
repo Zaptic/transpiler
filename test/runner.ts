@@ -1,8 +1,7 @@
 import { assert } from 'chai' // tslint:disable-line
 import * as fs from 'fs'
 import * as path from 'path'
-import { JoiModule } from '../src/modules/joi'
-import { JsonSchemaModule } from '../src/modules/jsonSchema'
+import { JoiModule, JsonSchemaModule } from '../src'
 import * as Transpiler from '../src/transpiler'
 
 // TODO make this friendlier to use
@@ -32,6 +31,7 @@ describe('The Library', function() {
         it(`${featureName}`, async function() {
             if (!moduleToRun || moduleToRun === 'json') {
                 const jsonResult = Transpiler.processFiles({
+                    compiler: { strictNullChecks: true },
                     filePaths: [inputFilePath],
                     module: new JsonSchemaModule(),
                 })
@@ -42,6 +42,7 @@ describe('The Library', function() {
 
             if (!moduleToRun || moduleToRun === 'joi') {
                 const joiResult = Transpiler.processFiles({
+                    compiler: { strictNullChecks: true },
                     filePaths: [inputFilePath],
                     module: new JoiModule({ allowEmptyStrings: false }),
                 })

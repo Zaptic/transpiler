@@ -131,6 +131,10 @@ export function isOptional(symbol: ts.Symbol) {
     return Boolean(symbol.flags & ts.SymbolFlags.Optional)
 }
 
+export function isUndefined(type: ts.Type) {
+    return Boolean(type.flags & ts.TypeFlags.Undefined)
+}
+
 export function isPrototype(symbol: ts.Symbol) {
     return Boolean(symbol.flags & ts.SymbolFlags.Prototype)
 }

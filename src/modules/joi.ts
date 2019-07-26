@@ -2,11 +2,7 @@ import * as Transpiler from '../transpiler'
 
 export type JoiSchema = string
 
-interface ResolvedProperty {
-    isOptional: boolean
-    name: string
-    resolvedType: JoiSchema
-}
+type ResolvedProperty = Transpiler.ResolvedProperty<JoiSchema>
 
 interface JoiModuleOptions {
     /**
@@ -95,6 +91,10 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
     }
 
     public buildUnion(resolvedTypes: JoiSchema[]): JoiSchema {
+        // If a union of types is composed of a type T OR undefined then we can reduce that to T.
+        const filteredTypes = resolvedTypes.filter(resolvedType => resolvedType !== 'Joi.allow(undefined)')
+        if (filteredTypes.length === 1) return filteredTypes[0]
+
         return `Joi.alternatives([${resolvedTypes.join(',')}])`
     }
 
@@ -106,14 +106,17 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
     }
 
     public buildObject(properties: ResolvedProperty[], type: Transpiler.TypeIdentification): JoiSchema {
-        const propertiesSchema = properties.map(({ isOptional, name, resolvedType }) => {
-            if (isOptional) {
-                if (this.options.assumeRequired) return `${name}: ${resolvedType}.optional()`
-                return `${name}: ${resolvedType}`
-            }
-            if (this.options.assumeRequired) return `${name}: ${resolvedType}`
-            return `${name}: ${resolvedType}.required()`
-        })
+        const propertiesSchema = properties
+            // Handle the case when someone defined something like `{ property: undefined }` by ignoring that completely
+            .filter(({ resolvedType }) => resolvedType !== 'Joi.allow(undefined)')
+            .map(({ maybeUndefined, isOptional, name, resolvedType }) => {
+                if (isOptional || maybeUndefined) {
+                    if (this.options.assumeRequired) return `${name}: ${resolvedType}.optional()`
+                    return `${name}: ${resolvedType}`
+                }
+                if (this.options.assumeRequired) return `${name}: ${resolvedType}`
+                return `${name}: ${resolvedType}.required()`
+            })
         const schema = `Joi.object({ ${propertiesSchema.join(',')} })`
 
         // Update the definitions if the current type was self referencing
