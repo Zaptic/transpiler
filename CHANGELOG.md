@@ -15,6 +15,7 @@
 ### Added
 
 - Support for empty objects `{}`. It used to result in a "Not supported" error
+- Support for null and undefined types
 
 ## [0.1.1] - 2019/02/24
 
