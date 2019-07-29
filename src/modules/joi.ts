@@ -155,6 +155,6 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
     }
 
     public endResolutionWithDefinitions(resolvedType: JoiSchema) {
-        return { resolvedType, definitionsMap: this.definitionsMap }
+        return { resolvedType, definitionsMap: new Map(this.definitionsMap.entries()) }
     }
 }

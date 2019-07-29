@@ -173,6 +173,6 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
     }
 
     public endResolutionWithDefinitions(resolvedType: JsonSchema) {
-        return { resolvedType, definitionsMap: this.definitionsMap }
+        return { resolvedType, definitionsMap: new Map(this.definitionsMap.entries()) }
     }
 }
