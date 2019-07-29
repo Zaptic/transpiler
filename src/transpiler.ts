@@ -33,6 +33,7 @@ export interface Module<T> {
     buildReference: (type: TypeIdentification) => T
     buildIndexableObject: (resolvedType: T, kind: 'string' | 'number') => T
     endResolution: (resolvedType: T) => T
+    endResolutionWithDefinitions: (resolvedType: T) => { resolvedType: T; definitionsMap: Map<string, T> }
     startResolution: () => void
 }
 
