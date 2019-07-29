@@ -40,9 +40,10 @@ export interface Module<T> {
 export interface Options<T> extends Compiler.Options {
     module: Module<T>
     isProcessable?: (node: ts.Node) => boolean
+    returnDefinitions?: boolean
 }
 
-export function processFiles<T>(options: Options<T>): Array<[string, T]> {
+export function processFiles<T>(options: Options<T>): Array<[string, T, Map<string, T>?]> {
     const { program, checker } = Compiler.createProgram(options)
 
     const nodesOfInterest = program.getSourceFiles().reduce((nodes: ts.Node[], file) => {
@@ -52,8 +53,16 @@ export function processFiles<T>(options: Options<T>): Array<[string, T]> {
 
     return nodesOfInterest.map(typeNode => {
         const fileName = typeNode.getSourceFile().fileName
+
+        options.module.startResolution()
         const type = resolveTypeNode(typeNode, checker, options.module)
-        return [fileName, type] as [string, T]
+
+        if (options.returnDefinitions) {
+            const { resolvedType, definitionsMap } = options.module.endResolutionWithDefinitions(type)
+            return [fileName, resolvedType, definitionsMap]
+        }
+
+        return [fileName, options.module.endResolution(type)]
     })
 }
 
@@ -164,7 +173,5 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
         return 'Not supported' as any
     }
 
-    module.startResolution()
-    const result = recursion(checker.getTypeAtLocation(startNode))
-    return module.endResolution(result)
+    return recursion(checker.getTypeAtLocation(startNode))
 }
