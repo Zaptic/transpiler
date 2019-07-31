@@ -21,6 +21,16 @@ interface JoiModuleOptions {
 }
 
 export class JoiModule implements Transpiler.Module<JoiSchema> {
+    public static mergeDefinition(resolvedType: JoiSchema, definitionsMap: Map<string, JoiSchema>) {
+        const result = `const resolvedType = ${resolvedType}`
+        if (definitionsMap.size === 0) return result
+
+        const definitions: JoiSchema[] = []
+        // Add a definitions section
+        for (const [key, value] of definitionsMap.entries()) definitions.push(`const ${key} = ${value}`)
+
+        return [...definitions, result].join('\n')
+    }
     /**
      * These are the types that are self referencing for which we need to create a definition
      */
@@ -141,16 +151,10 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
     }
 
     public endResolution(resolvedType: JoiSchema) {
-        const result = `const resolvedType = ${resolvedType}`
+        return JoiModule.mergeDefinition(resolvedType, this.definitionsMap)
+    }
 
-        if (this.definitionsMap.size > 0) {
-            const definitions: JoiSchema[] = []
-            // Add a definitions section
-            for (const [key, value] of this.definitionsMap.entries()) definitions.push(`const ${key} = ${value}`)
-
-            return [...definitions, result].join('\n')
-        }
-
-        return result
+    public endResolutionWithDefinitions(resolvedType: JoiSchema) {
+        return { resolvedType, definitionsMap: new Map(this.definitionsMap.entries()) }
     }
 }

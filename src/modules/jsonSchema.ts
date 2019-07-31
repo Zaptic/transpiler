@@ -20,6 +20,17 @@ export interface JsonSchema {
 type ResolvedProperty = Transpiler.ResolvedProperty<JsonSchema>
 
 export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
+    public static mergeDefinition(resolvedType: JsonSchema, definitionsMap: Map<string, JsonSchema>) {
+        if (definitionsMap.size === 0) return resolvedType
+
+        const definitions: JsonSchema['definitions'] = {}
+
+        // Add a definitions section
+        for (const [key, value] of definitionsMap.entries()) definitions[key] = value
+
+        return { ...resolvedType, definitions }
+    }
+
     /**
      * These are the types that are self referencing for which we need to create a definition
      */
@@ -158,15 +169,10 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
     }
 
     public endResolution(resolvedType: JsonSchema) {
-        if (this.definitionsMap.size > 0) {
-            const definitions: JsonSchema['definitions'] = {}
+        return JsonSchemaModule.mergeDefinition(resolvedType, this.definitionsMap)
+    }
 
-            // Add a definitions section
-            for (const [key, value] of this.definitionsMap.entries()) definitions[key] = value
-
-            return { ...resolvedType, definitions }
-        }
-
-        return resolvedType
+    public endResolutionWithDefinitions(resolvedType: JsonSchema) {
+        return { resolvedType, definitionsMap: new Map(this.definitionsMap.entries()) }
     }
 }
