@@ -5,6 +5,7 @@
 ### Changed
 
 - Modules are now classes
+- Using `Joi.concat()` instead of `Joi.keys()` for intersections
 
 ### Fixed
 

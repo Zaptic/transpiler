@@ -23,5 +23,5 @@ export const json = [
 export const joi = [
     'const resolvedType = Joi.object({ city: Joi.string(),population: Joi.string() })',
     'const resolvedType = Joi.object({ city: Joi.string().optional(),street: Joi.string(),population: Joi.number() })',
-    'const resolvedType = Joi.object().keys(({ city: Joi.string(),population: Joi.string() })).keys(({ city: Joi.string().optional(),street: Joi.string(),population: Joi.number() }))',
+    'const resolvedType = Joi.object().concat(Joi.object({ city: Joi.string(),population: Joi.string() })).concat(Joi.object({ city: Joi.string().optional(),street: Joi.string(),population: Joi.number() }))',
 ]

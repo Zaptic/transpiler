@@ -109,10 +109,9 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
     }
 
     public buildIntersection(resolvedTypes: JoiSchema[]): JoiSchema {
-        // Keys don't accept joi objects so we need to remove Joi.object().
-        // We only remove "Joi.object" because the extra parens are still valid JS.
-        const keys = resolvedTypes.map(type => `.keys(${type.replace('Joi.object', '')})`)
-        return `Joi.object()${keys.join('')}`
+        // Use concat to concatenate objects
+        const concats = resolvedTypes.map(type => `.concat(${type})`)
+        return `Joi.object()${concats.join('')}`
     }
 
     public buildObject(properties: ResolvedProperty[], type: Transpiler.TypeIdentification): JoiSchema {
