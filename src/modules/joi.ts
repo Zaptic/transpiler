@@ -109,9 +109,20 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
     }
 
     public buildIntersection(resolvedTypes: JoiSchema[]): JoiSchema {
-        // Use concat to concatenate objects
-        const concats = resolvedTypes.map(type => `.concat(${type})`)
-        return `Joi.object()${concats.join('')}`
+        // If something is lazy we remove the lazy part to make sure that we are dealing with objects only and then
+        // We concatenate them
+        const concats = resolvedTypes
+            .map(lazyType => lazyType.replace('Joi.lazy(() => ', '('))
+            .map(type => `.concat(${type})`)
+
+        // The new object, result of all the concatenated parts
+        const object = `Joi.object()${concats.join('')}`
+
+        // If there were no lazy types we can produce an object that is the result of the concatenation
+        if (resolvedTypes.find(resolvedType => resolvedType.startsWith('Joi.lazy')) === undefined) return object
+
+        // If they are lazy types we propagate them
+        return `Joi.lazy(() => ${object})`
     }
 
     public buildObject(properties: ResolvedProperty[], type: Transpiler.TypeIdentification): JoiSchema {

@@ -19,6 +19,7 @@
 - Support for null and undefined types
 - Support for returning type definitions along with the resolved type
 - Added TSDocs to help with implementing a module
+- Support for recurring intersections
 
 ## [0.1.1] - 2019/02/24
 
