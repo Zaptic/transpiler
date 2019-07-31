@@ -105,7 +105,7 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
         const filteredTypes = resolvedTypes.filter(resolvedType => resolvedType !== 'Joi.allow(undefined)')
         if (filteredTypes.length === 1) return filteredTypes[0]
 
-        return `Joi.alternatives([${resolvedTypes.join(',')}])`
+        return `Joi.alternatives([${filteredTypes.join(',')}])`
     }
 
     public buildIntersection(resolvedTypes: JoiSchema[]): JoiSchema {

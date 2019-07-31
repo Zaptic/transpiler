@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Don't return `Joi.allow(undefined)` when generating unions in the joi module
+
 ## [0.2.0] - 2019/07/31
 
 ### Changed
