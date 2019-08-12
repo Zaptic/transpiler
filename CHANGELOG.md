@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.2.2] - 2019/08/12
+
 ### Fixed
 
 - Handle literal `true` and `false`. They previously would resolve to undefined.
