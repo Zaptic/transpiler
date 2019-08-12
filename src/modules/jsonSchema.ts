@@ -95,9 +95,7 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
     }
 
     public buildUnion(resolvedTypes: JsonSchema[]): JsonSchema {
-        // If a union of types is composed of a type T OR undefined then we can reduce that to T.
-        const filteredTypes = resolvedTypes.filter(resolvedType => resolvedType.type !== 'undefined')
-        if (filteredTypes.length === 1) return filteredTypes[0]
+        if (resolvedTypes.length === 1) return resolvedTypes[0]
 
         return { anyOf: resolvedTypes }
     }

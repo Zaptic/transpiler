@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Handle literal `true` and `false`. They previously would resolve to undefined.
+
+### Changed
+
+- Modules won't get the undefined bits of types in unions anymore to improve performance.
+  Both modules were filtering it out and it did not seem used
+- true | false union types will be resolved to boolean
+
 ## [0.2.1] - 2019/08/12
 
 ### Fixed

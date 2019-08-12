@@ -4,6 +4,7 @@ export const json = [
         additionalProperties: false,
         properties: {
             params: {},
+            isValid: { type: 'boolean' },
             req: {
                 additionalProperties: false,
                 properties: {
@@ -25,6 +26,7 @@ export const json = [
         additionalProperties: false,
         properties: {
             params: {},
+            isValid: { type: 'boolean' },
             req: {
                 additionalProperties: false,
                 properties: {
@@ -51,6 +53,7 @@ export const json = [
                 required: ['id'],
                 type: 'object',
             },
+            isValid: { type: 'boolean' },
             req: {
                 additionalProperties: false,
                 properties: {
@@ -71,7 +74,7 @@ export const json = [
 ]
 
 export const joi = [
-    'const resolvedType = Joi.object({ params: Joi.any(),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })',
-    'const resolvedType = Joi.object({ params: Joi.any(),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })',
-    'const resolvedType = Joi.object({ params: Joi.object({ id: Joi.number() }),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })',
+    'const resolvedType = Joi.object({ params: Joi.any(),isValid: Joi.boolean().optional(),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })',
+    'const resolvedType = Joi.object({ params: Joi.any(),isValid: Joi.boolean().optional(),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })',
+    'const resolvedType = Joi.object({ params: Joi.object({ id: Joi.number() }),isValid: Joi.boolean().optional(),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })',
 ]

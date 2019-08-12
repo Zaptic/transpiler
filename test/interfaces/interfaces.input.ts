@@ -1,6 +1,7 @@
 // tslint:disable
 interface Context {
     params: any
+    isValid?: boolean
     req: {
         body: { [key: string]: any }
     }

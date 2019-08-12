@@ -180,7 +180,14 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
         if (Types.isBigIntLiteral(type)) {
             return module.buildLiteral(type.value.negative ? `-${type.value.base10Value}` : type.value.base10Value)
         }
-        if (Types.isLiteral(type)) return module.buildLiteral(type.value)
+        if (Types.isLiteral(type)) {
+            // When a literal type does not have a value it's a true or false literal
+            if (!type.value) {
+                // True or false literals are not typed in the library but they have an intrinsic name
+                return module.buildLiteral((type as any).intrinsicName === 'true')
+            }
+            return module.buildLiteral(type.value)
+        }
         if (Types.isPrimitive(type)) return module.buildPrimitive(typeString as Primitive)
         if (Types.isArray(type)) return module.buildArray(recursion(type.typeArguments[0]))
         if (Types.isTuple(type)) return module.buildTuple(type.typeArguments.map(recursion))
@@ -232,8 +239,7 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
                 resolvedProperties.push({
                     isOptional: Types.isOptional(property),
                     maybeUndefined:
-                        Types.isUnion(propertyType) &&
-                        propertyType.types.filter(part => !Types.isUndefined(part)).length === 1,
+                        Types.isUnion(propertyType) && propertyType.types.some(part => Types.isUndefined(part)),
                     name: property.getName(),
                     resolvedType: recursion(propertyType),
                 })
@@ -244,7 +250,14 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
             return module.buildObject(resolvedProperties, identification)
         }
         if (Types.isGenericType(type)) return module.buildAny()
-        if (Types.isUnion(type)) return module.buildUnion(type.types.map(recursion))
+        if (Types.isUnion(type)) {
+            // Filter undefined types as they don't impact unions
+            const definedTypes = type.types.filter(Types.isDefined)
+
+            if (Types.isUnionBoolean(definedTypes)) return module.buildPrimitive('boolean')
+
+            return module.buildUnion(definedTypes.map(recursion))
+        }
         if (Types.isIntersection(type)) return module.buildIntersection(type.types.map(recursion))
 
         return 'Not supported' as any

@@ -10,6 +10,7 @@ const only: string = ''
 const moduleToRun: string = ''
 
 describe('The Library', function() {
+    this.timeout(3000)
     const featuresRootFolder = path.resolve('test')
 
     const inputs = fs

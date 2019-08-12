@@ -49,7 +49,7 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
     }
 
     public buildLiteral(literal: number | string | boolean | bigint): JoiSchema {
-        if (typeof literal === 'number') return `Joi.equal(${literal})`
+        if (typeof literal === 'number' || typeof literal === 'boolean') return `Joi.equal(${literal})`
         return `Joi.equal("${literal}")`
     }
 
@@ -101,11 +101,9 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
     }
 
     public buildUnion(resolvedTypes: JoiSchema[]): JoiSchema {
-        // If a union of types is composed of a type T OR undefined then we can reduce that to T.
-        const filteredTypes = resolvedTypes.filter(resolvedType => resolvedType !== 'Joi.allow(undefined)')
-        if (filteredTypes.length === 1) return filteredTypes[0]
+        if (resolvedTypes.length === 1) return resolvedTypes[0]
 
-        return `Joi.alternatives([${filteredTypes.join(',')}])`
+        return `Joi.alternatives([${resolvedTypes.join(',')}])`
     }
 
     public buildIntersection(resolvedTypes: JoiSchema[]): JoiSchema {

@@ -9,6 +9,8 @@ type Never = never
 type PrimitiveString = string
 type PrimitiveNumber = number
 type PrimitiveBoolean = boolean
+type PrimitiveTrue = true
+type PrimitiveFalse = false
 
 type ArrayString = string[]
 type ArrayNumber = number[]

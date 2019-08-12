@@ -64,6 +64,36 @@ export function isPrimitive(type: ts.Type) {
     return Boolean(check)
 }
 
+export function isDefined(type: ts.Type) {
+    return !Boolean(type.flags & ts.TypeFlags.Undefined)
+}
+
+function isLiteralTrue(type: LiteralWithoutBigInt) {
+    // Using any because intrinsicName is not typed on the library but seems to be the only way
+    return type.value === undefined && (type as any).intrinsicName === 'true'
+}
+
+function isLiteralFalse(type: LiteralWithoutBigInt) {
+    // Using any because intrinsicName is not typed on the library but seems to be the only way
+    return type.value === undefined && (type as any).intrinsicName === 'false'
+}
+
+/**
+ * When having a union, it is possible that it represents a boolean: true | false
+ * This function will return true if the types can be narrowed down to a boolean.
+ * For it to work you need to previously have filtered undefineds from the union
+ */
+export function isUnionBoolean(types: ts.Type[]) {
+    if (types.length !== 2) return false
+
+    const typeA = types[0]
+    const typeB = types[1]
+
+    if (!isLiteral(typeA) || !isLiteral(typeB)) return false
+
+    return (isLiteralTrue(typeA) && isLiteralFalse(typeB)) || (isLiteralTrue(typeB) && isLiteralFalse(typeA))
+}
+
 /**
  * This is an approximation to determine if an "object" represents a function or a method
  */
