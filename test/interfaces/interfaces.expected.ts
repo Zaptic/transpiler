@@ -40,8 +40,9 @@ export const json = [
                 required: ['body'],
                 type: 'object',
             },
+            'hyphenated-property': { type: 'number' },
         },
-        required: ['params', 'req'],
+        required: ['params', 'hyphenated-property', 'req'],
         type: 'object',
     },
     {
@@ -52,6 +53,9 @@ export const json = [
                 properties: { id: { type: 'number' } },
                 required: ['id'],
                 type: 'object',
+            },
+            'hyphenated-property': {
+                type: 'number',
             },
             isValid: { type: 'boolean' },
             req: {
@@ -68,13 +72,13 @@ export const json = [
                 type: 'object',
             },
         },
-        required: ['params', 'req'],
+        required: ['params', 'hyphenated-property', 'req'],
         type: 'object',
     },
 ]
 
 export const joi = [
     'const resolvedType = Joi.object({ params: Joi.any(),isValid: Joi.boolean().optional(),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })',
-    'const resolvedType = Joi.object({ params: Joi.any(),isValid: Joi.boolean().optional(),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })',
-    'const resolvedType = Joi.object({ params: Joi.object({ id: Joi.number() }),isValid: Joi.boolean().optional(),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })',
+    "const resolvedType = Joi.object({ params: Joi.any(),'hyphenated-property': Joi.number(),isValid: Joi.boolean().optional(),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })",
+    "const resolvedType = Joi.object({ params: Joi.object({ id: Joi.number() }),'hyphenated-property': Joi.number(),isValid: Joi.boolean().optional(),req: Joi.object({ body: Joi.object().pattern(/.*/, Joi.any()) }) })",
 ]

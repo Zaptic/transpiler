@@ -128,12 +128,15 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
             // Handle the case when someone defined something like `{ property: undefined }` by ignoring that completely
             .filter(({ resolvedType }) => resolvedType !== 'Joi.allow(undefined)')
             .map(({ maybeUndefined, isOptional, name, resolvedType }) => {
+                const nameString = name.includes('-') ? `'${name}'` : name
+
                 if (isOptional || maybeUndefined) {
-                    if (this.options.assumeRequired) return `${name}: ${resolvedType}.optional()`
+                    if (this.options.assumeRequired) return `${nameString}: ${resolvedType}.optional()`
                     return `${name}: ${resolvedType}`
                 }
-                if (this.options.assumeRequired) return `${name}: ${resolvedType}`
-                return `${name}: ${resolvedType}.required()`
+                if (this.options.assumeRequired) return `${nameString}: ${resolvedType}`
+
+                return `${nameString}: ${resolvedType}.required()`
             })
         const schema = `Joi.object({ ${propertiesSchema.join(',')} })`
 

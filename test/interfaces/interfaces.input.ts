@@ -9,6 +9,7 @@ interface Context {
 
 interface SpecificContext<P> extends Context {
     params: P
+    'hyphenated-property': number
 }
 
 type InstanceOfSpecificContext = SpecificContext<{ id: number }>
