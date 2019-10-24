@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- We were not handling hyphenated properties in objects in the joi module
+- Enum validation was not working (it was using `only` instead of `alternatives`)
+
 ## [0.2.2] - 2019/08/12
 
 ### Fixed
