@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.2.3] - 2019/10/24
+
 ### Fixed
 
 - We were not handling hyphenated properties in objects in the joi module
