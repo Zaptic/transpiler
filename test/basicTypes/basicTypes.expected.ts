@@ -33,5 +33,5 @@ export const joi = [
     'const resolvedType = Joi.array().items(Joi.number())',
     'const resolvedType = Joi.array().items(Joi.boolean())',
     'const resolvedType = Joi.array().ordered([Joi.string(),Joi.number(),Joi.boolean()])',
-    'const resolvedType = Joi.only([Joi.equal("Red"),Joi.equal("Green"),Joi.equal("Blue")])',
+    'const resolvedType = Joi.alternatives([Joi.equal("Red"),Joi.equal("Green"),Joi.equal("Blue")])',
 ]

@@ -97,7 +97,7 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
     }
 
     public buildEnum(resolvedEnum: Array<[string, JoiSchema]>): JoiSchema {
-        return `Joi.only([${resolvedEnum.map(([_, schema]) => schema).join(',')}])`
+        return `Joi.alternatives([${resolvedEnum.map(([_, schema]) => schema).join(',')}])`
     }
 
     public buildUnion(resolvedTypes: JoiSchema[]): JoiSchema {
