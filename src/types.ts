@@ -125,19 +125,15 @@ export function isReference(type: ts.ObjectType): type is ts.TypeReference {
  * Returns true if a type is an array
  * The only way to check that from a type seems to be to make sure it's a generic that is called 'Array'. This should
  * work as you're not normally able to override the Array type and if you do ... well ... too bad?
- *
- * We override the typeArguments type because it's not optional in case of an array or at least it should not be?
- * Also an array should only have 1 typeArgument
  */
-export function isArray(type: ts.Type): type is ts.TypeReference & { typeArguments: [ts.Type] } {
+export function isArray(type: ts.Type): type is ts.TypeReference {
     return isObject(type) && isReference(type) && Boolean(type.symbol && type.symbol.escapedName === 'Array')
 }
 
 /**
  * Similar to the array the tuple also has the tuple flag on it but has no symbol
- * In this case we override the typeArguments to make sure they are here and that they are an actual N-sized array
  */
-export function isTuple(type: ts.Type): type is ts.TypeReference & { typeArguments: ts.Type[] } {
+export function isTuple(type: ts.Type): type is ts.TypeReference {
     return isObject(type) && isReference(type) && Boolean(type.target.objectFlags & ts.ObjectFlags.Tuple)
 }
 

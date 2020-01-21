@@ -189,8 +189,8 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
             return module.buildLiteral(type.value)
         }
         if (Types.isPrimitive(type)) return module.buildPrimitive(typeString as Primitive)
-        if (Types.isArray(type)) return module.buildArray(recursion(type.typeArguments[0]))
-        if (Types.isTuple(type)) return module.buildTuple(type.typeArguments.map(recursion))
+        if (Types.isArray(type)) return module.buildArray(recursion(checker.getTypeArguments(type)[0]))
+        if (Types.isTuple(type)) return module.buildTuple(checker.getTypeArguments(type).map(recursion))
         if (Types.isEnum(type)) {
             const types = type.types.map(t => [t.symbol.escapedName, recursion(t)] as [string, T])
             return module.buildEnum(types)
