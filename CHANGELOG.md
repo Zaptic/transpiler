@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2020/01/21
+
 ### Changed
 - Now using TS 3.7.5
 
