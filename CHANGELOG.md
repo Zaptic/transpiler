@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- Now using TS 3.7.5
+
 ## [0.2.3] - 2019/10/24
 
 ### Fixed
