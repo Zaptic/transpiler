@@ -98,7 +98,9 @@ export function isUnionBoolean(types: ts.Type[]) {
  * This is an approximation to determine if an "object" represents a function or a method
  */
 export function isFunctionLike(object: ts.ObjectType) {
-    const check = object.symbol.flags & ts.SymbolFlags.Function || object.symbol.flags & ts.SymbolFlags.Method
+    const check =
+        object.symbol != null &&
+        (object.symbol.flags & ts.SymbolFlags.Function || object.symbol.flags & ts.SymbolFlags.Method)
     return Boolean(check)
 }
 
