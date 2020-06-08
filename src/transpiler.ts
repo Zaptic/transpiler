@@ -182,7 +182,7 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
         }
         if (Types.isLiteral(type)) {
             // When a literal type does not have a value it's a true or false literal
-            if (!type.value) {
+            if (type.value == null) {
                 // True or false literals are not typed in the library but they have an intrinsic name
                 return module.buildLiteral((type as any).intrinsicName === 'true')
             }
