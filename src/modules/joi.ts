@@ -110,7 +110,13 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
         // If something is lazy we remove the lazy part to make sure that we are dealing with objects only and then
         // We concatenate them
         const concats = resolvedTypes
-            .map(lazyType => lazyType.replace('Joi.lazy(() => ', '('))
+            .map(lazyType => {
+                if (lazyType.startsWith('Joi.lazy(() => ')) {
+                    return lazyType.replace('Joi.lazy(() => ', '(')
+                }
+
+                return lazyType
+            })
             .map(type => `.concat(${type})`)
 
         // The new object, result of all the concatenated parts
