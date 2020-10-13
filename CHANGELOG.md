@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.3.2] - 2020/10/13
+
 ### Fixed
 
 - Issue where references were not using `Joi.lazy`
