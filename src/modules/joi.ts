@@ -66,11 +66,11 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
             case 'any':
                 return this.buildAny()
             case 'void':
-                return 'Joi.allow(undefined)'
+                return 'Joi.valid(undefined)'
             case 'null':
-                return `Joi.allow(null)`
+                return `Joi.valid(null)`
             case 'undefined':
-                return 'Joi.allow(undefined)'
+                return 'Joi.valid(undefined)'
             case 'never':
                 return `Joi.forbidden()`
             case 'string':
@@ -132,7 +132,7 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
     public buildObject(properties: ResolvedProperty[], type: Transpiler.TypeIdentification): JoiSchema {
         const propertiesSchema = properties
             // Handle the case when someone defined something like `{ property: undefined }` by ignoring that completely
-            .filter(({ resolvedType }) => resolvedType !== 'Joi.allow(undefined)')
+            .filter(({ resolvedType }) => resolvedType !== 'Joi.valid(undefined)')
             .map(({ maybeUndefined, isOptional, name, resolvedType }) => {
                 const nameString = name.includes('-') ? `'${name}'` : name
 
