@@ -1,6 +1,6 @@
 {
     "name": "@zaptic-external/transpiler",
-    "version": "0.3.2",
+    "version": "0.3.3",
     "description": "A simple ts type transpiler",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
