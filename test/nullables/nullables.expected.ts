@@ -18,8 +18,8 @@ export const json = [
 ]
 
 export const joi = [
-    'const resolvedType = Joi.alternatives([Joi.allow(null),Joi.any()])',
-    'const resolvedType = Joi.alternatives([Joi.allow(null),Joi.string()])',
+    'const resolvedType = Joi.alternatives([Joi.valid(null),Joi.any()])',
+    'const resolvedType = Joi.alternatives([Joi.valid(null),Joi.string()])',
     'const resolvedType = Joi.string()',
-    'const resolvedType = Joi.object({ continent: Joi.alternatives([Joi.allow(null),Joi.string()]),country: Joi.alternatives([Joi.allow(null),Joi.string()]),state: Joi.string().optional(),city: Joi.alternatives([Joi.allow(null),Joi.string()]),street: Joi.string() })',
+    'const resolvedType = Joi.object({ continent: Joi.alternatives([Joi.valid(null),Joi.string()]),country: Joi.alternatives([Joi.valid(null),Joi.string()]),state: Joi.string().optional(),city: Joi.alternatives([Joi.valid(null),Joi.string()]),street: Joi.string() })',
 ]

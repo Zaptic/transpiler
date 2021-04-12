@@ -20,9 +20,9 @@ export const json = [
 
 export const joi = [
     'const resolvedType = Joi.any()',
-    'const resolvedType = Joi.allow(undefined)',
-    'const resolvedType = Joi.allow(null)',
-    'const resolvedType = Joi.allow(undefined)',
+    'const resolvedType = Joi.valid(undefined)',
+    'const resolvedType = Joi.valid(null)',
+    'const resolvedType = Joi.valid(undefined)',
     'const resolvedType = Joi.forbidden()',
     'const resolvedType = Joi.string()',
     'const resolvedType = Joi.number()',
