@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Recursion was not handled in indexed types see https://github.com/Zaptic/transpiler/issues/6
+
 ## [0.3.3] - 2021/04/12
 
 ## [0.3.2] - 2020/10/13

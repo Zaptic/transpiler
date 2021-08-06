@@ -202,7 +202,11 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
             const indexType = getIndexType(type)
             // If we have a string index it's more permissive than anything else on the object and at the moment
             // I don't think it makes sense to take anything else there into account if that makes sense
-            if (indexType) return module.buildIndexableObject(recursion(indexType.indexType), indexType.kind)
+            if (indexType) {
+                // Index types could be self referencing so we add them to the visited array
+                visited.set(typeId, identification)
+                return module.buildIndexableObject(recursion(indexType.indexType), indexType.kind)
+            }
 
             // For now abstract classes are parsed as normal classes
 
