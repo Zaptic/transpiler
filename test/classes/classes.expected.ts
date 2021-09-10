@@ -1,119 +1,98 @@
 // tslint:disable
 export const json = [
     {
-        additionalProperties: false,
-        properties: {
-            name: {
-                type: 'string',
-            },
-            speed: {
-                type: 'number',
-            },
-        },
-        required: ['name', 'speed'],
-        type: 'object',
-    },
-    {
-        additionalProperties: false,
-        properties: {
-            _barkCount: {
-                type: 'number',
-            },
-            isDog: {
-                type: 'boolean',
-            },
-            name: {
-                type: 'string',
-            },
-            speed: {
-                type: 'number',
+        $ref: '#/definitions/Animal',
+        definitions: {
+            Animal: {
+                additionalProperties: false,
+                properties: { name: { type: 'string' }, speed: { type: 'number' } },
+                required: ['name', 'speed'],
+                type: 'object',
             },
         },
-        required: ['_barkCount', 'name', 'speed', 'isDog'],
-        type: 'object',
     },
     {
-        additionalProperties: false,
-        properties: {
-            name: {
-                type: 'string',
-            },
-            speed: {
-                type: 'number',
-            },
-        },
-        required: ['name', 'speed'],
-        type: 'object',
-    },
-    {
-        additionalProperties: false,
-        properties: {
-            authors: {
-                items: {
-                    type: 'string',
+        $ref: '#/definitions/Dog',
+        definitions: {
+            Dog: {
+                additionalProperties: false,
+                properties: {
+                    _barkCount: { type: 'number' },
+                    name: { type: 'string' },
+                    speed: { type: 'number' },
+                    isDog: { type: 'boolean' },
                 },
-                type: 'array',
+                required: ['_barkCount', 'name', 'speed', 'isDog'],
+                type: 'object',
             },
         },
-        required: ['authors'],
-        type: 'object',
     },
     {
-        additionalProperties: false,
-        properties: {
-            authors: {
-                items: {
-                    type: 'string',
+        $ref: '#/definitions/Cat',
+        definitions: {
+            Cat: {
+                additionalProperties: false,
+                properties: { name: { type: 'string' }, speed: { type: 'number' } },
+                required: ['name', 'speed'],
+                type: 'object',
+            },
+        },
+    },
+    {
+        $ref: '#/definitions/Art',
+        definitions: {
+            Art: {
+                additionalProperties: false,
+                properties: { authors: { type: 'array', items: { type: 'string' } } },
+                required: ['authors'],
+                type: 'object',
+            },
+        },
+    },
+    {
+        $ref: '#/definitions/Painting',
+        definitions: {
+            Painting: {
+                additionalProperties: false,
+                properties: {
+                    colors: { type: 'array', items: { type: 'string' } },
+                    authors: { type: 'array', items: { type: 'string' } },
                 },
-                type: 'array',
-            },
-            colors: {
-                items: {
-                    type: 'string',
-                },
-                type: 'array',
+                required: ['colors', 'authors'],
+                type: 'object',
             },
         },
-        required: ['colors', 'authors'],
-        type: 'object',
     },
     {
-        additionalProperties: false,
-        properties: {
-            x: {
-                type: 'number',
-            },
-            y: {
-                type: 'number',
+        $ref: '#/definitions/Point',
+        definitions: {
+            Point: {
+                additionalProperties: false,
+                properties: { x: { type: 'number' }, y: { type: 'number' } },
+                required: ['x', 'y'],
+                type: 'object',
             },
         },
-        required: ['x', 'y'],
-        type: 'object',
     },
     {
-        additionalProperties: false,
-        properties: {
-            x: {
-                type: 'number',
-            },
-            y: {
-                type: 'number',
-            },
-            z: {
-                type: 'number',
+        $ref: '#/definitions/Point3d',
+        definitions: {
+            Point3d: {
+                additionalProperties: false,
+                properties: { z: { type: 'number' }, x: { type: 'number' }, y: { type: 'number' } },
+                required: ['z', 'x', 'y'],
+                type: 'object',
             },
         },
-        required: ['z', 'x', 'y'],
-        type: 'object',
     },
 ]
 
 export const joi = [
-    'const resolvedType = Joi.object({ name: Joi.string(),speed: Joi.number() })',
-    'const resolvedType = Joi.object({ _barkCount: Joi.number(),name: Joi.string(),speed: Joi.number(),isDog: Joi.boolean() })',
-    'const resolvedType = Joi.object({ name: Joi.string(),speed: Joi.number() })',
-    'const resolvedType = Joi.object({ authors: Joi.array().items(Joi.string()) })',
-    'const resolvedType = Joi.object({ colors: Joi.array().items(Joi.string()),authors: Joi.array().items(Joi.string()) })',
-    'const resolvedType = Joi.object({ x: Joi.number(),y: Joi.number() })',
-    'const resolvedType = Joi.object({ z: Joi.number(),x: Joi.number(),y: Joi.number() })',
+    'const Animal = Joi.object({ name: Joi.string(),speed: Joi.number() })\nconst resolvedType = Joi.lazy(() => Animal)',
+    'const Dog = Joi.object({ _barkCount: Joi.number(),name: Joi.string(),speed: Joi.number(),isDog: Joi.boolean() })\nconst resolvedType = Joi.lazy(() => Dog)',
+    'const Cat = Joi.object({ name: Joi.string(),speed: Joi.number() })\nconst resolvedType = Joi.lazy(() => Cat)',
+    'const Art = Joi.object({ authors: Joi.array().items(Joi.string()) })\nconst resolvedType = Joi.lazy(() => Art)',
+    'const Painting = Joi.object({ colors: Joi.array().items(Joi.string()),authors: Joi.array().items(Joi.string()) })\nconst resolvedType = Joi.lazy(() => Painting)',
+    'const Point = Joi.object({ x: Joi.number(),y: Joi.number() })\nconst resolvedType = Joi.lazy(() => Point)',
+    'const Point3d = Joi.object({ z: Joi.number(),x: Joi.number(),y: Joi.number() })\nconst resolvedType = Joi.lazy(() => Point3d)',
 ]

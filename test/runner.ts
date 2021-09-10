@@ -33,6 +33,7 @@ describe('The Library', function() {
             if (!moduleToRun || moduleToRun === 'json') {
                 const jsonResult = Transpiler.processFiles({
                     compiler: { strictNullChecks: true },
+                    eagerReferences: true,
                     filePaths: [inputFilePath],
                     module: new JsonSchemaModule(),
                 })
@@ -44,10 +45,13 @@ describe('The Library', function() {
             if (!moduleToRun || moduleToRun === 'joi') {
                 const joiResult = Transpiler.processFiles({
                     compiler: { strictNullChecks: true },
+                    eagerReferences: true,
                     filePaths: [inputFilePath],
                     module: new JoiModule({ allowEmptyStrings: false }),
                 })
                 const joiExpected = (await import(expectedFilePath)).joi
+
+                console.log(JSON.stringify(joiResult.map(([_, schema]) => schema)))
 
                 assert.deepEqual(joiResult.map(([_, schema]) => schema), joiExpected)
             }

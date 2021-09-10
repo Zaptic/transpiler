@@ -1,26 +1,29 @@
 // tslint:disable
 export const json = [
     {
-        additionalProperties: false,
-        properties: { name: { type: 'string' }, id: { type: 'string' } },
-        required: ['name', 'id'],
-        type: 'object',
+        $ref: '#/definitions/User',
+        definitions: {
+            User: {
+                additionalProperties: false,
+                properties: { name: { type: 'string' }, id: { type: 'string' } },
+                required: ['name', 'id'],
+                type: 'object',
+            },
+        },
     },
     {
         $ref: '#/definitions/Team',
         definitions: {
+            User: {
+                additionalProperties: false,
+                properties: { name: { type: 'string' }, id: { type: 'string' } },
+                required: ['name', 'id'],
+                type: 'object',
+            },
             Team: {
                 additionalProperties: false,
                 properties: {
-                    users: {
-                        type: 'array',
-                        items: {
-                            additionalProperties: false,
-                            properties: { name: { type: 'string' }, id: { type: 'string' } },
-                            required: ['name', 'id'],
-                            type: 'object',
-                        },
-                    },
+                    users: { type: 'array', items: { $ref: '#/definitions/User' } },
                     parent: { $ref: '#/definitions/Team' },
                 },
                 required: ['users'],
@@ -30,34 +33,14 @@ export const json = [
     },
     {
         additionalProperties: false,
-        patternProperties: {
-            '.*': {
-                anyOf: [
-                    {
-                        type: 'string',
-                    },
-                    {
-                        $ref: '#/definitions/OneLanguageTranslations',
-                    },
-                ],
-            },
-        },
+        patternProperties: { '.*': { anyOf: [{ type: 'string' }, { $ref: '#/definitions/OneLanguageTranslations' }] } },
         properties: {},
         type: 'object',
         definitions: {
             OneLanguageTranslations: {
                 additionalProperties: false,
                 patternProperties: {
-                    '.*': {
-                        anyOf: [
-                            {
-                                type: 'string',
-                            },
-                            {
-                                $ref: '#/definitions/OneLanguageTranslations',
-                            },
-                        ],
-                    },
+                    '.*': { anyOf: [{ type: 'string' }, { $ref: '#/definitions/OneLanguageTranslations' }] },
                 },
                 properties: {},
                 type: 'object',
@@ -67,7 +50,7 @@ export const json = [
 ]
 
 export const joi = [
-    'const resolvedType = Joi.object({ name: Joi.string(),id: Joi.string() })',
-    'const Team = Joi.object({ users: Joi.array().items(Joi.object({ name: Joi.string(),id: Joi.string() })),parent: Joi.lazy(() => Team).optional() })\nconst resolvedType = Joi.lazy(() => Team)',
+    'const User = Joi.object({ name: Joi.string(),id: Joi.string() })\nconst resolvedType = Joi.lazy(() => User)',
+    'const User = Joi.object({ name: Joi.string(),id: Joi.string() })\nconst Team = Joi.object({ users: Joi.array().items(Joi.lazy(() => User)),parent: Joi.lazy(() => Team).optional() })\nconst resolvedType = Joi.lazy(() => Team)',
     'const OneLanguageTranslations = Joi.object().pattern(/.*/, Joi.alternatives([Joi.string(),Joi.lazy(() => OneLanguageTranslations)]))\nconst resolvedType = Joi.object().pattern(/.*/, Joi.alternatives([Joi.string(),Joi.lazy(() => OneLanguageTranslations)]))',
 ]
