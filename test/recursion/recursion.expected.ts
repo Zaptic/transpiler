@@ -30,9 +30,6 @@ export const json = [
     },
     {
         additionalProperties: false,
-        definitions: {
-            OneLanguageTranslations: {},
-        },
         patternProperties: {
             '.*': {
                 anyOf: [
@@ -47,11 +44,30 @@ export const json = [
         },
         properties: {},
         type: 'object',
+        definitions: {
+            OneLanguageTranslations: {
+                additionalProperties: false,
+                patternProperties: {
+                    '.*': {
+                        anyOf: [
+                            {
+                                type: 'string',
+                            },
+                            {
+                                $ref: '#/definitions/OneLanguageTranslations',
+                            },
+                        ],
+                    },
+                },
+                properties: {},
+                type: 'object',
+            },
+        },
     },
 ]
 
 export const joi = [
     'const resolvedType = Joi.object({ name: Joi.string(),id: Joi.string() })',
     'const Team = Joi.object({ users: Joi.array().items(Joi.object({ name: Joi.string(),id: Joi.string() })),parent: Joi.lazy(() => Team).optional() })\nconst resolvedType = Joi.lazy(() => Team)',
-    'const OneLanguageTranslations = \nconst resolvedType = Joi.object().pattern(/.*/, Joi.alternatives([Joi.string(),Joi.lazy(() => OneLanguageTranslations)]))',
+    'const OneLanguageTranslations = Joi.object().pattern(/.*/, Joi.alternatives([Joi.string(),Joi.lazy(() => OneLanguageTranslations)]))\nconst resolvedType = Joi.object().pattern(/.*/, Joi.alternatives([Joi.string(),Joi.lazy(() => OneLanguageTranslations)]))',
 ]

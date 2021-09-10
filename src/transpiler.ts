@@ -83,7 +83,7 @@ export interface Module<T> {
      *             We recommend keeping a `Map<name, T>` of all the definitions so they can be used to detect recurrence
      *             withing the type definitions. See the sample modules for more details on possible implementations.
      */
-    buildObject: (properties: Array<ResolvedProperty<T>>, type: TypeIdentification) => T
+    buildObject: (properties: Array<ResolvedProperty<T>>) => T
     /**
      * Should create a reference to a type previously visited
      * @param type the identification for the type to reference
@@ -100,14 +100,7 @@ export interface Module<T> {
      * resolved. This is where we usually augment the type definition with the references (definitions)
      * @param resolvedType The type that was resolved
      */
-    endResolution: (resolvedType: T) => T
-    /**
-     * Returns the resolved type and the definitions map. This might not apply everywhere but is convenient to have
-     * when we want to outsource merging the type and the definitions to the user so that they can merge definitions
-     * from many different nodes
-     * @param resolvedType The type resolved so far
-     */
-    endResolutionWithDefinitions: (resolvedType: T) => { resolvedType: T; definitionsMap: Map<string, T> }
+    endResolution: (resolvedType: T, definitionsMap: Map<string, T>) => T
     /**
      * Called at the start of the resolution to help you clear any state that you might be keeping internaly
      */
@@ -117,7 +110,6 @@ export interface Module<T> {
 export interface Options<T> extends Compiler.Options {
     module: Module<T>
     isProcessable?: (node: ts.Node) => boolean
-    returnDefinitions?: boolean
 }
 
 export function processFiles<T>(options: Options<T>): Array<[string, T, Map<string, T>?]> {
@@ -132,18 +124,18 @@ export function processFiles<T>(options: Options<T>): Array<[string, T, Map<stri
         const fileName = typeNode.getSourceFile().fileName
 
         options.module.startResolution()
-        const type = resolveTypeNode(typeNode, checker, options.module)
+        const { type, references } = resolveTypeNode(typeNode, checker, options.module)
 
-        if (options.returnDefinitions) {
-            const { resolvedType, definitionsMap } = options.module.endResolutionWithDefinitions(type)
-            return [fileName, resolvedType, definitionsMap]
-        }
-
-        return [fileName, options.module.endResolution(type)]
+        return [fileName, options.module.endResolution(type, references), references]
     })
 }
 
-function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module: Module<T>): T {
+interface ResolvedTypeNode<T> {
+    type: T
+    references: Map<string, T>
+}
+
+function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module: Module<T>): ResolvedTypeNode<T> {
     /**
      * Returns the static declarations of a class - does not return the prototype
      */
@@ -166,7 +158,14 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
         return null
     }
 
-    const visited = new Map<number, TypeIdentification>()
+    // Keeps track of a portion of the resolution path in order to detect cycles
+    const visited = new Set<number>()
+    // Contains the types that are self referencing (that have a cycle)
+    const selfReferencingTypes = new Set<number>()
+    // Contains the resolved types that have a name in order to be able to reference them
+    const references = new Map<string, T>()
+    // Keeps tract of which named types were used in order to only add those to the returned references
+    const referencesUsed = new Set<string>()
 
     function recursion(type: ts.Type): T {
         const typeString = checker.typeToString(type)
@@ -197,15 +196,26 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
         }
         if (Types.isDate(typeString)) return module.buildDate()
         if (Types.isObject(type)) {
-            if (visited.has(typeId)) return module.buildReference(identification)
+            if (visited.has(typeId)) {
+                // This means that there is a cycle (a self referencing type is being resolved)
+                referencesUsed.add(identification.name)
+                selfReferencingTypes.add(typeId)
+                return module.buildReference(identification)
+            }
 
             const indexType = getIndexType(type)
             // If we have a string index it's more permissive than anything else on the object and at the moment
             // I don't think it makes sense to take anything else there into account if that makes sense
             if (indexType) {
-                // Index types could be self referencing so we add them to the visited array
-                visited.set(typeId, identification)
-                return module.buildIndexableObject(recursion(indexType.indexType), indexType.kind)
+                // Index types could be self referencing so we add them to the visited array before recursing
+                visited.add(typeId)
+                const indexableType = recursion(indexType.indexType)
+                visited.delete(typeId)
+
+                const resolvedIndexable = module.buildIndexableObject(indexableType, indexType.kind)
+                references.set(identification.name, resolvedIndexable)
+
+                return resolvedIndexable
             }
 
             // For now abstract classes are parsed as normal classes
@@ -216,14 +226,14 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
             const parentDeclarations = type.symbol.getDeclarations()
 
             // An "object" type should always have a declaration
-            if (!parentDeclarations) return module.buildObject([], identification)
+            if (!parentDeclarations) return module.buildObject([])
             // Not sure if this will ever happen
             if (parentDeclarations.length === 0) return 'Not supported - declarations of length 0 for symbol' as any
 
             const resolvedProperties: Array<ResolvedProperty<T>> = []
 
             // We mark the current type as visited only once we know that it has children
-            visited.set(typeId, identification)
+            visited.add(typeId)
 
             properties.forEach(property => {
                 if (Types.isPrototype(property)) return // Do not process prototypes
@@ -251,7 +261,17 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
 
             // Remove the object from visited once it's resolved
             visited.delete(typeId)
-            return module.buildObject(resolvedProperties, identification)
+
+            const resolvedObject = module.buildObject(resolvedProperties)
+            references.set(identification.name, resolvedObject)
+
+            // If the type is self referencing, then even the first instance should be a reference to the definition
+            // in order to avoid repetition
+            if (selfReferencingTypes.has(typeId)) {
+                return module.buildReference(identification)
+            }
+
+            return resolvedObject
         }
         if (Types.isGenericType(type)) return module.buildAny()
         if (Types.isUnion(type)) {
@@ -267,5 +287,10 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
         return 'Not supported' as any
     }
 
-    return recursion(checker.getTypeAtLocation(startNode))
+    const resolvedType = recursion(checker.getTypeAtLocation(startNode))
+
+    return {
+        references: new Map([...references.entries()].filter(([name]) => referencesUsed.has(name))),
+        type: resolvedType,
+    }
 }

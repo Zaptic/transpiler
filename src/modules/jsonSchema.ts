@@ -31,13 +31,8 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
         return { ...resolvedType, definitions }
     }
 
-    /**
-     * These are the types that are self referencing for which we need to create a definition
-     */
-    private definitionsMap = new Map<string, JsonSchema>()
-
     public startResolution() {
-        this.definitionsMap.clear()
+        // do nothing
     }
 
     public buildLiteral(literal: number | string | boolean | bigint): JsonSchema {
@@ -121,7 +116,7 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
         return intersection
     }
 
-    public buildObject(properties: ResolvedProperty[], type: Transpiler.TypeIdentification): JsonSchema {
+    public buildObject(properties: ResolvedProperty[]): JsonSchema {
         const schema = {
             additionalProperties: false,
             properties: {} as { [key: string]: JsonSchema },
@@ -140,15 +135,6 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
         // Remove the required if it's not required
         if (schema.required.length === 0) delete schema.required
 
-        // Update the definitions if the current type was self referencing
-        const currentDefinition = this.definitionsMap.get(type.name)
-        if (currentDefinition) {
-            this.definitionsMap.set(type.name, schema)
-            // If we know that the current type is self referencing and we will have it in the definitions portion we
-            // don't have to write the whole type in the actual "body" we can simply use the reference
-            return this.buildReference(type)
-        }
-
         return schema
     }
 
@@ -162,15 +148,10 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
     }
 
     public buildReference(type: Transpiler.TypeIdentification) {
-        if (!this.definitionsMap.get(type.name)) this.definitionsMap.set(type.name, {})
         return { $ref: `#/definitions/${type.name}` }
     }
 
-    public endResolution(resolvedType: JsonSchema) {
-        return JsonSchemaModule.mergeDefinition(resolvedType, this.definitionsMap)
-    }
-
-    public endResolutionWithDefinitions(resolvedType: JsonSchema) {
-        return { resolvedType, definitionsMap: new Map(this.definitionsMap.entries()) }
+    public endResolution(resolvedType: JsonSchema, definitionsMap: Map<string, JsonSchema>) {
+        return JsonSchemaModule.mergeDefinition(resolvedType, definitionsMap)
     }
 }
