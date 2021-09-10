@@ -1,5 +1,6 @@
 import * as ts from 'typescript'
 import * as Compiler from './compiler'
+import { typeStringIsTypeName } from './helpers'
 import * as Types from './types'
 
 export interface ResolvedProperty<T> {
@@ -110,6 +111,7 @@ export interface Module<T> {
 export interface Options<T> extends Compiler.Options {
     module: Module<T>
     isProcessable?: (node: ts.Node) => boolean
+    eagerReferences?: boolean
 }
 
 export function processFiles<T>(options: Options<T>): Array<[string, T, Map<string, T>?]> {
@@ -124,7 +126,7 @@ export function processFiles<T>(options: Options<T>): Array<[string, T, Map<stri
         const fileName = typeNode.getSourceFile().fileName
 
         options.module.startResolution()
-        const { type, references } = resolveTypeNode(typeNode, checker, options.module)
+        const { type, references } = resolveTypeNode(typeNode, checker, options)
 
         return [fileName, options.module.endResolution(type, references), references]
     })
@@ -135,7 +137,7 @@ interface ResolvedTypeNode<T> {
     references: Map<string, T>
 }
 
-function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module: Module<T>): ResolvedTypeNode<T> {
+function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options: Options<T>): ResolvedTypeNode<T> {
     /**
      * Returns the static declarations of a class - does not return the prototype
      */
@@ -166,6 +168,8 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
     const references = new Map<string, T>()
     // Keeps tract of which named types were used in order to only add those to the returned references
     const referencesUsed = new Set<string>()
+
+    const { module, eagerReferences } = options
 
     function recursion(type: ts.Type): T {
         const typeString = checker.typeToString(type)
@@ -200,6 +204,11 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
                 // This means that there is a cycle (a self referencing type is being resolved)
                 referencesUsed.add(identification.name)
                 selfReferencingTypes.add(typeId)
+                return module.buildReference(identification)
+            }
+
+            if (eagerReferences && typeStringIsTypeName(identification.name) && references.has(identification.name)) {
+                referencesUsed.add(identification.name)
                 return module.buildReference(identification)
             }
 
@@ -271,6 +280,11 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
                 return module.buildReference(identification)
             }
 
+            if (eagerReferences && typeStringIsTypeName(identification.name)) {
+                referencesUsed.add(identification.name)
+                return module.buildReference(identification)
+            }
+
             return resolvedObject
         }
         if (Types.isGenericType(type)) return module.buildAny()
@@ -280,9 +294,37 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, module:
 
             if (Types.isUnionBoolean(definedTypes)) return module.buildPrimitive('boolean')
 
-            return module.buildUnion(definedTypes.map(recursion))
+            if (eagerReferences && typeStringIsTypeName(identification.name) && references.has(identification.name)) {
+                referencesUsed.add(identification.name)
+                return module.buildReference(identification)
+            }
+
+            const resolvedUnion = module.buildUnion(definedTypes.map(recursion))
+
+            if (eagerReferences && typeStringIsTypeName(identification.name)) {
+                references.set(identification.name, resolvedUnion)
+                referencesUsed.add(identification.name)
+                return module.buildReference(identification)
+            }
+
+            return resolvedUnion
         }
-        if (Types.isIntersection(type)) return module.buildIntersection(type.types.map(recursion))
+        if (Types.isIntersection(type)) {
+            if (eagerReferences && typeStringIsTypeName(identification.name) && references.has(identification.name)) {
+                referencesUsed.add(identification.name)
+                return module.buildReference(identification)
+            }
+
+            const resolvedIntersection = module.buildIntersection(type.types.map(recursion))
+
+            if (eagerReferences && typeStringIsTypeName(identification.name)) {
+                references.set(identification.name, resolvedIntersection)
+                referencesUsed.add(identification.name)
+                return module.buildReference(identification)
+            }
+
+            return resolvedIntersection
+        }
 
         return 'Not supported' as any
     }
