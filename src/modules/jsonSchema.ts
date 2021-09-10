@@ -96,24 +96,9 @@ export class JsonSchemaModule implements Transpiler.Module<JsonSchema> {
     }
 
     public buildIntersection(resolvedTypes: JsonSchema[]): JsonSchema {
-        const intersection: JsonSchema = {
-            additionalProperties: false,
-            properties: {},
-            type: 'object',
+        return {
+            allOf: resolvedTypes,
         }
-
-        const required = new Set<string>()
-
-        // Merge the declarations
-        resolvedTypes.forEach(part => {
-            const schema = part // Unions are made of complex types TODO improve types around here
-            intersection.properties = { ...intersection.properties, ...schema.properties }
-            if (schema.required !== undefined) schema.required.forEach(value => required.add(value))
-        })
-
-        if (required.size > 0) intersection.required = [...required.values()]
-
-        return intersection
     }
 
     public buildObject(properties: ResolvedProperty[]): JsonSchema {

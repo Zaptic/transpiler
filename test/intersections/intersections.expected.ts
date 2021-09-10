@@ -13,10 +13,20 @@ export const json = [
         type: 'object',
     },
     {
-        additionalProperties: false,
-        properties: { city: { type: 'string' }, population: { type: 'number' }, street: { type: 'string' } },
-        required: ['city', 'population', 'street'],
-        type: 'object',
+        allOf: [
+            {
+                additionalProperties: false,
+                properties: { city: { type: 'string' }, population: { type: 'string' } },
+                required: ['city', 'population'],
+                type: 'object',
+            },
+            {
+                additionalProperties: false,
+                properties: { city: { type: 'string' }, population: { type: 'number' }, street: { type: 'string' } },
+                required: ['street', 'population'],
+                type: 'object',
+            },
+        ],
     },
 ]
 
