@@ -29,9 +29,9 @@ export const joi = [
     'const resolvedType = Joi.boolean()',
     'const resolvedType = Joi.equal(true)',
     'const resolvedType = Joi.equal(false)',
-    'const resolvedType = Joi.array().items(Joi.string())',
-    'const resolvedType = Joi.array().items(Joi.number())',
-    'const resolvedType = Joi.array().items(Joi.boolean())',
+    'const resolvedType = Joi.array().items(Joi.string()).single()',
+    'const resolvedType = Joi.array().items(Joi.number()).single()',
+    'const resolvedType = Joi.array().items(Joi.boolean()).single()',
     'const resolvedType = Joi.array().ordered([Joi.string(),Joi.number(),Joi.boolean()])',
     'const resolvedType = Joi.alternatives([Joi.equal("Red"),Joi.equal("Green"),Joi.equal("Blue")])',
 ]

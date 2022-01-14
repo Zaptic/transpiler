@@ -52,6 +52,6 @@ export const json = [
 
 export const joi = [
     'const resolvedType = Joi.object({ name: Joi.string(),id: Joi.string() })',
-    'const Team = Joi.object({ users: Joi.array().items(Joi.object({ name: Joi.string(),id: Joi.string() })),parent: Joi.lazy(() => Team).optional() })\nconst resolvedType = Joi.lazy(() => Team)',
+    'const Team = Joi.object({ users: Joi.array().items(Joi.object({ name: Joi.string(),id: Joi.string() })).single(),parent: Joi.lazy(() => Team).optional() })\nconst resolvedType = Joi.lazy(() => Team)',
     'const OneLanguageTranslations = \nconst resolvedType = Joi.object().pattern(/.*/, Joi.alternatives([Joi.string(),Joi.lazy(() => OneLanguageTranslations)]))',
 ]

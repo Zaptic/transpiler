@@ -89,7 +89,7 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
     }
 
     public buildArray(resolvedType: JoiSchema): JoiSchema {
-        return `Joi.array().items(${resolvedType})`
+        return `Joi.array().items(${resolvedType}).single()`;
     }
 
     public buildTuple(resolvedTypes: JoiSchema[]): JoiSchema {
