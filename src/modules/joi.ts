@@ -126,7 +126,7 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
         return `Joi.lazy(() => ${object})`
     }
 
-    public buildObject(properties: ResolvedProperty[]): JoiSchema {
+    public buildObject(properties: ResolvedProperty[], _: string): JoiSchema {
         const propertiesSchema = properties
             // Handle the case when someone defined something like `{ property: undefined }` by ignoring that completely
             .filter(({ resolvedType }) => resolvedType !== 'Joi.valid(undefined)')

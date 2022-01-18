@@ -76,15 +76,9 @@ export interface Module<T> {
     /**
      * Should create the structure corresponding to an object like `{ foo: 1, goo: Object }`
      * @param properties an array of the resolved properties of the type
-     * @param type the unique identifier for this type (name + id).
-     *             Please note that the id is only unique within one invocation of the process function.
-     *             This means that calling process twice on the same file does not guarantee that the ids will stay
-     *             the same. These ids are exposed by typescript. And can be used to keep track of recurring type
-     *             definitions.
-     *             We recommend keeping a `Map<name, T>` of all the definitions so they can be used to detect recurrence
-     *             withing the type definitions. See the sample modules for more details on possible implementations.
+     * @param typeString The string representing the type
      */
-    buildObject: (properties: Array<ResolvedProperty<T>>) => T
+    buildObject: (properties: Array<ResolvedProperty<T>>, typeString: string) => T
     /**
      * Should create a reference to a type previously visited
      * @param type the identification for the type to reference
@@ -235,7 +229,7 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options
             const parentDeclarations = type.symbol.getDeclarations()
 
             // An "object" type should always have a declaration
-            if (!parentDeclarations) return module.buildObject([])
+            if (!parentDeclarations) return module.buildObject([], typeString)
             // Not sure if this will ever happen
             if (parentDeclarations.length === 0) return 'Not supported - declarations of length 0 for symbol' as any
 
@@ -271,7 +265,7 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options
             // Remove the object from visited once it's resolved
             visited.delete(typeId)
 
-            const resolvedObject = module.buildObject(resolvedProperties)
+            const resolvedObject = module.buildObject(resolvedProperties, typeString)
             references.set(identification.name, resolvedObject)
 
             // If the type is self referencing, then even the first instance should be a reference to the definition
