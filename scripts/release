@@ -8,7 +8,7 @@ fi
 
 echo "Compiling..."
 rm -rf dist/
-tsc
+yarn tsc
 
 echo "Checking release..."
 npm run prettier -l
