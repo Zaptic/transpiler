@@ -51,8 +51,6 @@ describe('The Library', function() {
                 })
                 const joiExpected = (await import(expectedFilePath)).joi
 
-                console.log(JSON.stringify(joiResult.map(([_, schema]) => schema)))
-
                 assert.deepEqual(joiResult.map(([_, schema]) => schema), joiExpected)
             }
         })
