@@ -160,19 +160,52 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options
     const selfReferencingTypes = new Set<number>()
     // Contains the resolved types that have a name in order to be able to reference them
     const references = new Map<string, T>()
-    // Keeps tract of which named types were used in order to only add those to the returned references
+    // Keeps track of which named types were used in order to only add those to the returned references
     const referencesUsed = new Set<string>()
+    // Keeps track of what id is linked to what name
+    const nameMap = new Map<number, string>()
+    // Keeps track of names that were used
+    const namesUsed = new Set<string>()
+
+    /**
+     * Returns the type information and ensures the name is unique
+     */
+    function getIdentification(type: ts.Type): TypeIdentification {
+        const typeInfo: TypeIdentification = {
+            id: Types.getTypeId(type),
+            name: checker.typeToString(type),
+        }
+
+        // If we have saved a name for this type id then we return it
+        const existingName = nameMap.get(typeInfo.id)
+        if (existingName != null) {
+            return { ...typeInfo, name: existingName }
+        }
+
+        // If we never came across this name then we mark it as used and save the relation between id and name
+        if (!namesUsed.has(typeInfo.name)) {
+            namesUsed.add(typeInfo.name)
+            nameMap.set(typeInfo.id, typeInfo.name)
+            return typeInfo
+        }
+
+        // Otherwise, we 'increment' the name until we find a unique one and associate that to the id
+        let increment = 1
+        let newName = `${typeInfo.name}${increment}`
+        while (namesUsed.has(newName)) {
+            increment++
+            newName = `${typeInfo.name}${increment}`
+        }
+
+        namesUsed.add(newName)
+        nameMap.set(typeInfo.id, newName)
+        return { ...typeInfo, name: newName }
+    }
 
     const { module, eagerReferences } = options
 
     function recursion(type: ts.Type): T {
-        const typeString = checker.typeToString(type)
-        const typeId = Types.getTypeId(type)
-
-        const identification: TypeIdentification = {
-            id: typeId,
-            name: typeString,
-        }
+        const typeInfo = getIdentification(type)
 
         if (Types.isBigIntLiteral(type)) {
             return module.buildLiteral(type.value.negative ? `-${type.value.base10Value}` : type.value.base10Value)
@@ -185,25 +218,25 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options
             }
             return module.buildLiteral(type.value)
         }
-        if (Types.isPrimitive(type)) return module.buildPrimitive(typeString as Primitive)
+        if (Types.isPrimitive(type)) return module.buildPrimitive(typeInfo.name as Primitive)
         if (Types.isArray(type)) return module.buildArray(recursion(checker.getTypeArguments(type)[0]))
         if (Types.isTuple(type)) return module.buildTuple(checker.getTypeArguments(type).map(recursion))
         if (Types.isEnum(type)) {
             const types = type.types.map(t => [t.symbol.escapedName, recursion(t)] as [string, T])
             return module.buildEnum(types)
         }
-        if (Types.isDate(typeString)) return module.buildDate()
+        if (Types.isDate(typeInfo.name)) return module.buildDate()
         if (Types.isObject(type)) {
-            if (visited.has(typeId)) {
+            if (visited.has(typeInfo.id)) {
                 // This means that there is a cycle (a self referencing type is being resolved)
-                referencesUsed.add(identification.name)
-                selfReferencingTypes.add(typeId)
-                return module.buildReference(identification)
+                referencesUsed.add(typeInfo.name)
+                selfReferencingTypes.add(typeInfo.id)
+                return module.buildReference(typeInfo)
             }
 
-            if (eagerReferences && typeStringIsTypeName(identification.name) && references.has(identification.name)) {
-                referencesUsed.add(identification.name)
-                return module.buildReference(identification)
+            if (eagerReferences && typeStringIsTypeName(typeInfo.name) && references.has(typeInfo.name)) {
+                referencesUsed.add(typeInfo.name)
+                return module.buildReference(typeInfo)
             }
 
             const indexType = getIndexType(type)
@@ -211,12 +244,12 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options
             // I don't think it makes sense to take anything else there into account if that makes sense
             if (indexType) {
                 // Index types could be self referencing so we add them to the visited array before recursing
-                visited.add(typeId)
+                visited.add(typeInfo.id)
                 const indexableType = recursion(indexType.indexType)
-                visited.delete(typeId)
+                visited.delete(typeInfo.id)
 
                 const resolvedIndexable = module.buildIndexableObject(indexableType, indexType.kind)
-                references.set(identification.name, resolvedIndexable)
+                references.set(typeInfo.name, resolvedIndexable)
 
                 return resolvedIndexable
             }
@@ -229,14 +262,14 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options
             const parentDeclarations = type.symbol.getDeclarations()
 
             // An "object" type should always have a declaration
-            if (!parentDeclarations) return module.buildObject([], typeString)
+            if (!parentDeclarations) return module.buildObject([], typeInfo.name)
             // Not sure if this will ever happen
             if (parentDeclarations.length === 0) return 'Not supported - declarations of length 0 for symbol' as any
 
             const resolvedProperties: Array<ResolvedProperty<T>> = []
 
             // We mark the current type as visited only once we know that it has children
-            visited.add(typeId)
+            visited.add(typeInfo.id)
 
             properties.forEach(property => {
                 if (Types.isPrototype(property)) return // Do not process prototypes
@@ -263,20 +296,20 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options
             })
 
             // Remove the object from visited once it's resolved
-            visited.delete(typeId)
+            visited.delete(typeInfo.id)
 
-            const resolvedObject = module.buildObject(resolvedProperties, typeString)
-            references.set(identification.name, resolvedObject)
+            const resolvedObject = module.buildObject(resolvedProperties, typeInfo.name)
+            references.set(typeInfo.name, resolvedObject)
 
             // If the type is self referencing, then even the first instance should be a reference to the definition
             // in order to avoid repetition
-            if (selfReferencingTypes.has(typeId)) {
-                return module.buildReference(identification)
+            if (selfReferencingTypes.has(typeInfo.id)) {
+                return module.buildReference(typeInfo)
             }
 
-            if (eagerReferences && typeStringIsTypeName(identification.name)) {
-                referencesUsed.add(identification.name)
-                return module.buildReference(identification)
+            if (eagerReferences && typeStringIsTypeName(typeInfo.name)) {
+                referencesUsed.add(typeInfo.name)
+                return module.buildReference(typeInfo)
             }
 
             return resolvedObject
@@ -288,33 +321,33 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options
 
             if (Types.isUnionBoolean(definedTypes)) return module.buildPrimitive('boolean')
 
-            if (eagerReferences && typeStringIsTypeName(identification.name) && references.has(identification.name)) {
-                referencesUsed.add(identification.name)
-                return module.buildReference(identification)
+            if (eagerReferences && typeStringIsTypeName(typeInfo.name) && references.has(typeInfo.name)) {
+                referencesUsed.add(typeInfo.name)
+                return module.buildReference(typeInfo)
             }
 
             const resolvedUnion = module.buildUnion(definedTypes.map(recursion))
 
-            if (eagerReferences && typeStringIsTypeName(identification.name)) {
-                references.set(identification.name, resolvedUnion)
-                referencesUsed.add(identification.name)
-                return module.buildReference(identification)
+            if (eagerReferences && typeStringIsTypeName(typeInfo.name)) {
+                references.set(typeInfo.name, resolvedUnion)
+                referencesUsed.add(typeInfo.name)
+                return module.buildReference(typeInfo)
             }
 
             return resolvedUnion
         }
         if (Types.isIntersection(type)) {
-            if (eagerReferences && typeStringIsTypeName(identification.name) && references.has(identification.name)) {
-                referencesUsed.add(identification.name)
-                return module.buildReference(identification)
+            if (eagerReferences && typeStringIsTypeName(typeInfo.name) && references.has(typeInfo.name)) {
+                referencesUsed.add(typeInfo.name)
+                return module.buildReference(typeInfo)
             }
 
             const resolvedIntersection = module.buildIntersection(type.types.map(recursion))
 
-            if (eagerReferences && typeStringIsTypeName(identification.name)) {
-                references.set(identification.name, resolvedIntersection)
-                referencesUsed.add(identification.name)
-                return module.buildReference(identification)
+            if (eagerReferences && typeStringIsTypeName(typeInfo.name)) {
+                references.set(typeInfo.name, resolvedIntersection)
+                referencesUsed.add(typeInfo.name)
+                return module.buildReference(typeInfo)
             }
 
             return resolvedIntersection
@@ -323,10 +356,10 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options
         return 'Not supported' as any
     }
 
-    const resolvedType = recursion(checker.getTypeAtLocation(startNode))
+    const finalType = recursion(checker.getTypeAtLocation(startNode))
 
     return {
         references: new Map([...references.entries()].filter(([name]) => referencesUsed.has(name))),
-        type: resolvedType,
+        type: finalType,
     }
 }
