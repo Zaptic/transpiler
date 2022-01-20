@@ -210,8 +210,6 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options
     const { module, eagerReferences } = options
 
     function recursion(type: ts.Type): T {
-        const typeInfo = getIdentification(type)
-
         if (Types.isBigIntLiteral(type)) {
             return module.buildLiteral(type.value.negative ? `-${type.value.base10Value}` : type.value.base10Value)
         }
@@ -223,13 +221,16 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options
             }
             return module.buildLiteral(type.value)
         }
-        if (Types.isPrimitive(type)) return module.buildPrimitive(typeInfo.name as Primitive)
+        if (Types.isPrimitive(type)) return module.buildPrimitive(checker.typeToString(type) as Primitive)
         if (Types.isArray(type)) return module.buildArray(recursion(checker.getTypeArguments(type)[0]))
         if (Types.isTuple(type)) return module.buildTuple(checker.getTypeArguments(type).map(recursion))
         if (Types.isEnum(type)) {
             const types = type.types.map(t => [t.symbol.escapedName, recursion(t)] as [string, T])
             return module.buildEnum(types)
         }
+
+        const typeInfo = getIdentification(type)
+
         if (Types.isDate(typeInfo.name)) return module.buildDate()
         if (Types.isObject(type)) {
             if (visited.has(typeInfo.id)) {
