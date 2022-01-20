@@ -106,24 +106,29 @@ export interface Options<T> extends Compiler.Options {
     module: Module<T>
     isProcessable?: (node: ts.Node) => boolean
     eagerReferences?: boolean
+    // Call for each file that has been processed.
+    processingCallback?: (fileName: string) => void
 }
 
-export function processFiles<T>(options: Options<T>): Array<[string, T, Map<string, T>?]> {
+type Result<T> = [string, T, Map<string, T>?]
+
+export function processFiles<T>(options: Options<T>): Array<Result<T>> {
     const { program, checker } = Compiler.createProgram(options)
 
-    const nodesOfInterest = program.getSourceFiles().reduce((nodes: ts.Node[], file) => {
-        if (!options.filePaths.includes(file.fileName)) return nodes
-        return nodes.concat(Compiler.getNodesToProcess(file, options.isProcessable))
+    return program.getSourceFiles().reduce((results: Array<Result<T>>, file) => {
+        if (!options.filePaths.includes(file.fileName)) return results
+
+        const resultPart = Compiler.getNodesToProcess(file, options.isProcessable).map(typeNode => {
+            options.module.startResolution()
+            const { type, references } = resolveTypeNode(typeNode, checker, options)
+
+            return [file.fileName, options.module.endResolution(type, references), references] as Result<T>
+        })
+
+        if (resultPart.length && options.processingCallback) options.processingCallback(file.fileName)
+
+        return results.concat(resultPart)
     }, [])
-
-    return nodesOfInterest.map(typeNode => {
-        const fileName = typeNode.getSourceFile().fileName
-
-        options.module.startResolution()
-        const { type, references } = resolveTypeNode(typeNode, checker, options)
-
-        return [fileName, options.module.endResolution(type, references), references]
-    })
 }
 
 interface ResolvedTypeNode<T> {
