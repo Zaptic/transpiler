@@ -118,9 +118,13 @@ export function processFiles<T>(options: Options<T>): Array<Result<T>> {
     return program.getSourceFiles().reduce((results: Array<Result<T>>, file) => {
         if (!options.filePaths.includes(file.fileName)) return results
 
-        const resultPart = Compiler.getNodesToProcess(file, options.isProcessable).map(typeNode => {
+        // Keeps track of used names within a file to avoid some rare issues with named types
+        let initialNameMap = new Map<number, string>()
+
+        const resultPart = Compiler.getNodesToProcess(file, options.isProcessable).map(startNode => {
             options.module.startResolution()
-            const { type, references } = resolveTypeNode(typeNode, checker, options)
+            const { type, nameMap, references } = resolveTypeNode({ startNode, checker, options, initialNameMap })
+            initialNameMap = nameMap
 
             return [file.fileName, options.module.endResolution(type, references), references] as Result<T>
         })
@@ -133,10 +137,18 @@ export function processFiles<T>(options: Options<T>): Array<Result<T>> {
 
 interface ResolvedTypeNode<T> {
     type: T
+    nameMap: Map<number, string>
     references: Map<string, T>
 }
 
-function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options: Options<T>): ResolvedTypeNode<T> {
+interface Resolver<T> {
+    startNode: ts.Node
+    checker: ts.TypeChecker
+    options: Options<T>
+    initialNameMap: Map<number, string>
+}
+
+function resolveTypeNode<T>({ startNode, checker, options, initialNameMap }: Resolver<T>): ResolvedTypeNode<T> {
     /**
      * Returns the static declarations of a class - does not return the prototype
      */
@@ -168,9 +180,9 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options
     // Keeps track of which named types were used in order to only add those to the returned references
     const referencesUsed = new Set<string>()
     // Keeps track of what id is linked to what name
-    const nameMap = new Map<number, string>()
+    const nameMap = initialNameMap
     // Keeps track of names that were used
-    const namesUsed = new Set<string>()
+    const namesUsed = new Set<string>(initialNameMap.values())
 
     /**
      * Returns the type information and ensures the name is unique
@@ -365,6 +377,7 @@ function resolveTypeNode<T>(startNode: ts.Node, checker: ts.TypeChecker, options
     const finalType = recursion(checker.getTypeAtLocation(startNode))
 
     return {
+        nameMap,
         references: new Map([...references.entries()].filter(([name]) => referencesUsed.has(name))),
         type: finalType,
     }
