@@ -131,7 +131,9 @@ export class JoiModule implements Transpiler.Module<JoiSchema> {
             // Handle the case when someone defined something like `{ property: undefined }` by ignoring that completely
             .filter(({ resolvedType }) => resolvedType !== 'Joi.valid(undefined)')
             .map(({ maybeUndefined, isOptional, name, resolvedType }) => {
-                const nameString = name.includes('-') ? `'${name}'` : name
+                const nameString = /^[\$_a-zA-Z][\$_\w]*$/.test(name)
+                    ? name
+                    : `'${name}'`;
 
                 if (isOptional || maybeUndefined) {
                     if (this.options.assumeRequired) return `${nameString}: ${resolvedType}.optional()`
