@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.4.2] - 2024/07/28
+
+* Escape punctuation in field names
+
 ## [0.4.1] - 2022/01/21
 
 ## [0.4.0] - 2022/01/18
